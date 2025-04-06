@@ -53,7 +53,8 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    double bpm = 0.0;
+    double ppqPosition = 0.0;
+    double timeInSeconds = 0.0;
 
 private:
     juce::AudioPlayHead* playHead;//[1]

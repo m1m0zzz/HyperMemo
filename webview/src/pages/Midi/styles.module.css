@@ -1,0 +1,62 @@
+.main {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 50px;
+  padding: 0 1rem;
+}
+
+.title {
+  font-size: 1.2rem;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.content {
+  position: relative;
+  flex: auto;
+  padding: 0 2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.noteName {
+  flex: 0 1 auto;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.words {
+  flex: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: inherit;
+}
+
+.control {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+}
+
+.pianoContainer {
+  flex: 0 1 auto;
+  overflow-x: scroll;
+}
+
+.piano {
+  height: 100px;
+  white-space: nowrap;
+  font-size: 0.5rem;
+}

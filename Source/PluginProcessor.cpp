@@ -132,15 +132,13 @@ bool HyperMemoAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts
 void HyperMemoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
+    //auto totalNumInputChannels  = getTotalNumInputChannels();
+    //auto totalNumOutputChannels = getTotalNumOutputChannels();
 
     playHead = this->getPlayHead();
     playHead->getCurrentPosition(currentPositionInfo);
-
-    bpm = currentPositionInfo.bpm;
-
-    DBG("bpm:" << bpm);
+    ppqPosition = currentPositionInfo.ppqPosition;
+    timeInSeconds = currentPositionInfo.timeInSamples;
 }
 
 //==============================================================================
