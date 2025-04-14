@@ -30,7 +30,7 @@ struct SinglePageBrowser : juce::WebBrowserComponent {
 //==============================================================================
 /**
 */
-class HyperMemoAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer
+class HyperMemoAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
     HyperMemoAudioProcessorEditor (HyperMemoAudioProcessor&);
@@ -39,11 +39,6 @@ public:
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
-
-    void timerCallback() override
-    {
-        repaint();
-    }
 
 private:
     // This reference is provided as a quick way for your editor to

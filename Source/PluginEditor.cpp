@@ -17,9 +17,7 @@ HyperMemoAudioProcessorEditor::HyperMemoAudioProcessorEditor (HyperMemoAudioProc
     // editor's size to whatever you need it to be.
     setSize (1280, 720);
     setResizeLimits(400, 300, 3840, 2160);
-
     setResizable(true, true);
-    //startTimerHz(30);
 
     addAndMakeVisible(webComponent);
     webComponent.goToURL (localDevServerAddress);
