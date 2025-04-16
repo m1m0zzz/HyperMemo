@@ -11,11 +11,12 @@
 
 //==============================================================================
 HyperMemoAudioProcessorEditor::HyperMemoAudioProcessorEditor (HyperMemoAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+    : AudioProcessorEditor (&p), audioProcessor (p), state(p.state)
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (1280, 720);
+    auto size = p.getSavedSize();
+    setSize(size.x, size.y);
     setResizeLimits(400, 300, 3840, 2160);
     setResizable(true, true);
 
@@ -50,6 +51,29 @@ void HyperMemoAudioProcessorEditor::paint(juce::Graphics& g) {
 
 void HyperMemoAudioProcessorEditor::resized() {
     webComponent.setBounds(getLocalBounds());
+    audioProcessor.setSavedSize({ getWidth(), getHeight() });
+}
+
+bool HyperMemoAudioProcessorEditor::hasState(juce::String id)
+{
+  return
+    id == "mode" ||
+    id == "fullScreen" ||
+    id == "bgColor" ||
+    id == "fontColor" ||
+    id == "fontSize" ||
+    id == "textAlign" ||
+    id == "editNoteNumber";
+}
+
+juce::var HyperMemoAudioProcessorEditor::getState(juce::String id)
+{
+  return state.getProperty(id);
+}
+
+void HyperMemoAudioProcessorEditor::setState(juce::String id, const juce::var& newValue)
+{
+  state.setProperty(id, newValue, nullptr);
 }
 
 std::optional<juce::WebBrowserComponent::Resource>

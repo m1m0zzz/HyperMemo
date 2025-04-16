@@ -1,16 +1,14 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef } from 'react'
 import { FiChevronLeft, FiChevronRight, FiMaximize, FiMinimize, FiSave, FiSettings } from 'react-icons/fi'
 import { BlackKey, KeyLabel, Piano, WhiteKey } from '@tremolo-ui/react'
-import { clamp, noteName, noteNumber } from '@tremolo-ui/functions'
-
-import { getNativeFunction } from 'juce-framework-frontend-mirror'
+import { clamp, noteName } from '@tremolo-ui/functions'
 
 import { IconButton } from '../../components/IconButton'
+import { useJuceContext } from '../../providers/juce'
+
+import { ConfigModal } from './ConfigModal'
 
 import styles from './styles.module.css'
-import { useAtomValue, useSetAtom } from 'jotai'
-import { bgColorAtom, fontColorAtom, fontSizeAtom, modalIsOpenAtom, textAlignAtom } from '../../atoms/midi'
-import { ConfigModal } from './ConfigModal'
 
 const MIN_NOTE_NUMBER = 0
 const MAX_NOTE_NUMBER = 127
@@ -18,18 +16,22 @@ const MAX_NOTE_NUMBER = 127
 export function Midi() {
   const pianoContainerRef = useRef<HTMLDivElement>(null)
 
-  const [fullScreen, setFullScreen] = useState(false)
-  const setIsOpen = useSetAtom(modalIsOpenAtom)
-  const [editNoteNumber, setEditNoteNumber] = useState(noteNumber('C0'))
-  const fontColor = useAtomValue(fontColorAtom)
-  const bgColor = useAtomValue(bgColorAtom)
-  const fontSize = useAtomValue(fontSizeAtom)
-  const textAlign = useAtomValue(textAlignAtom)
+  const fullScreen = useJuceContext((s) => s.fullScreen)
+  const setFullScreen = useJuceContext((s) => s.setFullScreen)
+  const editNoteNumber = useJuceContext((s) => s.editNoteNumber)
+  const setEditNoteNumber = useJuceContext((s) => s.setEditNoteNumber)
+  const fontColor = useJuceContext((s) => s.fontColor)
+  const bgColor = useJuceContext((s) => s.bgColor)
+  const fontSize = useJuceContext((s) => s.fontSize)
+  const textAlign = useJuceContext((s) => s.textAlign)
 
-  const openModal = useCallback(() => setIsOpen(true), [setIsOpen])
+  const setModalIsOpen = useJuceContext(s => s.setModalIsOpen)
 
-  const onMidiNoteOn = getNativeFunction('onMidiNoteOn')
-  const onMidiNoteOff = getNativeFunction('onMidiNoteOff')
+  const openModal = useCallback(() => setModalIsOpen(true), [setModalIsOpen])
+
+  const toggleFullScreen = () => {
+    setFullScreen(!fullScreen)
+  }
 
   return (
     <>
@@ -47,10 +49,10 @@ export function Midi() {
               </IconButton>
             </div>
             <div className={styles.headerRight}>
-              <IconButton>
+              <IconButton title='Save'>
                 <FiSave />
               </IconButton>
-              <IconButton onClick={openModal}>
+              <IconButton title='Open settings' onClick={openModal}>
                 <FiSettings />
               </IconButton>
             </div>
@@ -76,9 +78,7 @@ export function Midi() {
             </textarea>
           </div>
           <div className={styles.control}>
-            <IconButton
-              onClick={() => setFullScreen(!fullScreen)}
-            >
+            <IconButton onClick={toggleFullScreen}>
               {fullScreen ? <FiMinimize /> : <FiMaximize />}
             </IconButton>
           </div>
@@ -97,10 +97,10 @@ export function Midi() {
               height={120}
               onPlayNote={(noteNumber) => {
                 setEditNoteNumber(noteNumber)
-                onMidiNoteOn(1, noteNumber)
+                // onMidiNoteOn(1, noteNumber)
               }}
-              onStopNote={(noteNumber) => {
-                onMidiNoteOff(1, noteNumber)
+              onStopNote={() => {
+                // onMidiNoteOff(1, noteNumber)
               }}
             >
               <WhiteKey>

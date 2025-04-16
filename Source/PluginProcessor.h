@@ -53,12 +53,23 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    juce::Point<int> getSavedSize() const;
+    void setSavedSize(const juce::Point<int>& size);
+
     double ppqPosition = 0.0;
     double timeInSeconds = 0.0;
 
+    juce::ValueTree state;
 private:
-    juce::AudioPlayHead* playHead;//[1]
-    juce::AudioPlayHead::CurrentPositionInfo currentPositionInfo;//[2]
+    juce::AudioProcessorValueTreeState parameters;
+    juce::UndoManager undoManager;
+
+    juce::Point<int> editorSize;
+
+    //std::atomic<float>* gain = nullptr;
+
+    juce::AudioPlayHead* playHead = nullptr;
+    juce::AudioPlayHead::CurrentPositionInfo currentPositionInfo;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HyperMemoAudioProcessor)

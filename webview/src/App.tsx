@@ -1,21 +1,21 @@
-import { useAtom } from "jotai"
-import { useEffect } from "react"
-
 import { Init } from "./pages/Init"
 import { Sync } from "./pages/Sync"
 import { Midi } from "./pages/Midi"
 
-import { modeAtom } from "./atoms/global"
+import { JuceProvider, useJuceContext } from "./providers/juce"
 
 import "@tremolo-ui/react/styles/index.css"
 
 function App() {
-  const [mode, setMode] = useAtom(modeAtom)
+  return (
+    <JuceProvider>
+      <SimpleRouter />
+    </JuceProvider>
+  )
+}
 
-  useEffect(() => {
-    // set default mode
-    setMode('midi')
-  }, [])
+function SimpleRouter () {
+  const mode = useJuceContext(s => s.mode)
 
   return (
     <>

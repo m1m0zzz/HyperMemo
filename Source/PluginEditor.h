@@ -41,24 +41,55 @@ public:
     void resized() override;
 
 private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
+    bool hasState(juce::String id);
+    juce::var getState(juce::String id);
+    void setState(juce::String id, const juce::var& newValue);
+
     HyperMemoAudioProcessor& audioProcessor;
+    juce::ValueTree& state;
 
     juce::WebControlParameterIndexReceiver controlParameterIndexReceiver;
 
     SinglePageBrowser webComponent{
-     juce::WebBrowserComponent::Options{}
-         .withBackend(juce::WebBrowserComponent::Options::Backend::webview2)
-         .withWinWebView2Options(
-             juce::WebBrowserComponent::Options::WinWebView2{}
-                 .withUserDataFolder(juce::File::getSpecialLocation(
-                     juce::File::SpecialLocationType::tempDirectory)))
-         //.withOptionsFrom(gainRelay)
-         .withOptionsFrom(controlParameterIndexReceiver)
-        /*.withResourceProvider(
-            [this](const auto& url) { return getResource(url); },
-            juce::URL{"http://localhost:5173/"}.getOrigin())*/
+      juce::WebBrowserComponent::Options{}
+      .withBackend(juce::WebBrowserComponent::Options::Backend::webview2)
+      .withWinWebView2Options(
+        juce::WebBrowserComponent::Options::WinWebView2{}
+        .withUserDataFolder(juce::File::getSpecialLocation(
+          juce::File::SpecialLocationType::tempDirectory))
+      )
+      //.withOptionsFrom(gainRelay)
+      .withOptionsFrom(controlParameterIndexReceiver)
+      .withNativeFunction("loadState",
+        [safe_this = juce::Component::SafePointer(this)](auto& var, auto complete)
+        {
+          auto id = var[0].toString();
+          DBG("loadState: " << id);
+          if (safe_this->hasState(id)) {
+            DBG(safe_this->getState(id).toString());
+            complete(safe_this->getState(id));
+          }
+          else {
+            jassert("hasn't state: ", id);
+          }
+        })
+      .withNativeFunction("changeState",
+        [safe_this = juce::Component::SafePointer(this)](auto& var, auto complete)
+        {
+          auto id = var[0].toString();
+          DBG("changeState: " << id);
+          if (safe_this->hasState(id)) {
+            safe_this->setState(id, var[1]);
+            complete("true");
+          }
+          else {
+            complete("false");
+            jassert("hasn't state: ", id);
+          }
+        })
+      /*.withResourceProvider(
+          [this](const auto& url) { return getResource(url); },
+          juce::URL{"http://localhost:5173/"}.getOrigin())*/
     };
 
     std::optional<juce::WebBrowserComponent::Resource> getResource(

@@ -1,9 +1,8 @@
-import { useSetAtom } from "jotai"
-
-import { modeAtom } from "../atoms/global"
+import { useJuceContext } from "../providers/juce"
 
 export function Init() {
-  const setMode = useSetAtom(modeAtom)
+  const setMode = useJuceContext(s => s.setMode)
+
   return (
     <div>
       <h1>Init</h1>

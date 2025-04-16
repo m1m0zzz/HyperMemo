@@ -12,16 +12,60 @@
 //==============================================================================
 HyperMemoAudioProcessor::HyperMemoAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                       )
+  : AudioProcessor (BusesProperties()
+    #if ! JucePlugin_IsMidiEffect
+    #if ! JucePlugin_IsSynth
+      .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
+    #endif
+      .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
+    #endif
+      )
 #endif
+  ,
+  parameters(*this, &undoManager, juce::Identifier("parameters"), {}),
+  state(
+    "States",
+    {
+      // app state
+      { "mode", "midi" },
+      { "fullScreen", false },
+      { "editNoteNumber", 0 },
+      // config
+      { "fontColor", "#000000" },
+      { "bgColor", "#ffffff" },
+      { "fontSize", 32 },
+      { "textAlign", "center" },
+    },
+    {
+      { "TextData", {},
+        {
+          { "Line", {
+            { "index", 0 },
+            { "text", "sample text" }
+          }},
+          { "Line", {
+            { "index", 1 },
+            { "text", "sample text 2" }
+          }},
+        }
+      }
+    }
+  )
 {
+  DBG("===");
+  DBG(state.getProperty("mode").toString());
+  auto a = state.getProperty("fullScreen");
+  bool fullScreen;
+  if (a.isBool()) {
+    DBG("a is bool");
+    fullScreen = (bool)a;
+  }
+  DBG(state.getProperty("fullScreen").toString());
+  DBG(state.getProperty("editNoteNumber").toString());
+  DBG(state.getProperty("fontColor").toString());
+  DBG(state.getProperty("bgColor").toString());
+  DBG(state.getProperty("fontSize").toString());
+  DBG(state.getProperty("textAlign").toString());
 }
 
 HyperMemoAudioProcessor::~HyperMemoAudioProcessor()
@@ -158,12 +202,30 @@ void HyperMemoAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
+    auto editor = state.getOrCreateChildWithName("editor", nullptr);
+    editor.setProperty("size-x", editorSize.x, nullptr);
+    editor.setProperty("size-y", editorSize.y, nullptr);
+
+    juce::MemoryOutputStream stream(destData, false);
+    state.writeToStream(stream);
 }
 
 void HyperMemoAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+    juce::ValueTree tree = juce::ValueTree::readFromData(data, sizeInBytes);
+    if (tree.isValid()) {
+      state = tree;
+
+      auto editor = state.getChildWithName("editor");
+      if (editor.isValid()) {
+        editorSize.setX(editor.getProperty("size-x", 1280));
+        editorSize.setY(editor.getProperty("size-y", 720));
+        if (auto* activeEditor = getActiveEditor())
+          activeEditor->setSize(editorSize.x, editorSize.y);
+      }
+    }
 }
 
 //==============================================================================
@@ -171,4 +233,14 @@ void HyperMemoAudioProcessor::setStateInformation (const void* data, int sizeInB
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new HyperMemoAudioProcessor();
+}
+
+juce::Point<int> HyperMemoAudioProcessor::getSavedSize() const
+{
+  return editorSize;
+}
+
+void HyperMemoAudioProcessor::setSavedSize(const juce::Point<int>& size)
+{
+  editorSize = size;
 }

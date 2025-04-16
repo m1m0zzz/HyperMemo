@@ -1,19 +1,22 @@
-import { useAtom } from 'jotai'
 import { useCallback } from 'react'
 import Modal from 'react-modal'
 import { clamp } from '@tremolo-ui/functions'
 
-import { bgColorAtom, fontColorAtom, fontSizeAtom, modalIsOpenAtom, TextAlign, textAlignAtom } from '../../../atoms/midi'
+import { TextAlign, useJuceContext } from '../../../providers/juce'
 
 export function ConfigModal() {
-  const [modalIsOpen, setIsOpen] = useAtom(modalIsOpenAtom)
+  const modalIsOpen = useJuceContext(s => s.modalIsOpen)
+  const setModalIsOpen = useJuceContext(s => s.setModalIsOpen)
+  const bgColor = useJuceContext((s) => s.bgColor)
+  const setBgColor = useJuceContext((s) => s.setBgColor)
+  const fontColor = useJuceContext((s) => s.fontColor)
+  const setFontColor = useJuceContext((s) => s.setFontColor)
+  const fontSize = useJuceContext((s) => s.fontSize)
+  const setFontSize = useJuceContext((s) => s.setFontSize)
+  const textAlign = useJuceContext((s) => s.textAlign)
+  const setTextAlign = useJuceContext((s) => s.setTextAlign)
 
-  const [fontColor, setFontColor] = useAtom(fontColorAtom)
-  const [bgColor, setBgColor] = useAtom(bgColorAtom)
-  const [fontSize, setFontSize] = useAtom(fontSizeAtom)
-  const [textAlign, setTextAlign] = useAtom(textAlignAtom)
-
-  const closeModal = useCallback(() => setIsOpen(false), [setIsOpen])
+  const closeModal = useCallback(() => setModalIsOpen(false), [setModalIsOpen])
 
   return (
     <Modal
