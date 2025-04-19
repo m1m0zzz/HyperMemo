@@ -24,6 +24,8 @@ export function Midi() {
   const bgColor = useJuceContext((s) => s.bgColor)
   const fontSize = useJuceContext((s) => s.fontSize)
   const textAlign = useJuceContext((s) => s.textAlign)
+  const texts = useJuceContext((s) => s.texts)
+  const setTextAt = useJuceContext((s) => s.setTextAt)
 
   const setModalIsOpen = useJuceContext(s => s.setModalIsOpen)
 
@@ -69,11 +71,12 @@ export function Midi() {
         >
           <div className={styles.words}>
             <textarea
-              defaultValue={'サンプルテキスト'}
+              value={texts[editNoteNumber]}
               style={{
                 width: '100%',
                 textAlign: textAlign
               }}
+              onChange={(e) => setTextAt(e.target.value, editNoteNumber)}
             >
             </textarea>
           </div>

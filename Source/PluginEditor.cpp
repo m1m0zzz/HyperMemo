@@ -64,6 +64,7 @@ bool HyperMemoAudioProcessorEditor::hasState(juce::String id)
     id == "fontSize" ||
     id == "textAlign" ||
     id == "editNoteNumber";
+    //id == "texts";
 }
 
 juce::var HyperMemoAudioProcessorEditor::getState(juce::String id)

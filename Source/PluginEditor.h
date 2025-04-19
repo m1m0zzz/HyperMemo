@@ -63,29 +63,62 @@ private:
       .withNativeFunction("loadState",
         [safe_this = juce::Component::SafePointer(this)](auto& var, auto complete)
         {
-          auto id = var[0].toString();
-          DBG("loadState: " << id);
-          if (safe_this->hasState(id)) {
-            DBG(safe_this->getState(id).toString());
-            complete(safe_this->getState(id));
-          }
-          else {
+            auto id = var[0].toString();
+            DBG("loadState: " << id);
+            if (safe_this->hasState(id)) {
+                DBG(safe_this->getState(id).toString());
+                complete(safe_this->getState(id));
+            } else if (id == "texts") {
+                juce::ValueTree textData = safe_this->state.getChildWithName("TextData");
+                juce::StringArray texts;
+                for (size_t i = 0; i < MAX_MIDI_NOTE_NUMS; i++) {
+                    texts.add("");
+                }
+                for (auto it = textData.begin(); it != textData.end(); ++it) {
+                    auto line = *it;
+                    int index = line.getProperty("index");
+                    juce::String text = line.getProperty("text");
+                    DBG(index << ": " << text);
+                    texts.set(index, text);
+                }
+                // TODO: use hash map
+                complete(juce::var{ texts });
+            } else {
             jassert("hasn't state: ", id);
-          }
+            }
         })
       .withNativeFunction("changeState",
         [safe_this = juce::Component::SafePointer(this)](auto& var, auto complete)
         {
-          auto id = var[0].toString();
-          DBG("changeState: " << id);
-          if (safe_this->hasState(id)) {
-            safe_this->setState(id, var[1]);
-            complete("true");
-          }
-          else {
-            complete("false");
-            jassert("hasn't state: ", id);
-          }
+            auto id = var[0].toString();
+            DBG("changeState: " << id);
+            if (safe_this->hasState(id)) {
+                safe_this->setState(id, var[1]);
+                complete("true");
+            } else if (id == "texts") {
+              DBG("texts");
+                if (!var[1].isArray()) {
+                    complete("false");
+                    return;
+                }
+                juce::ValueTree textData = safe_this->state.getChildWithName("TextData");
+                juce::var texts = var[1];
+                for (int i = 0; i < texts.size(); i++) {
+                    auto text = texts[i];
+                    //DBG(i << ": " << text.toString());
+                    auto line = textData.getChildWithProperty("index", juce::var{ i });
+                    if (line.isValid()) {
+                        line.setProperty("text", texts[i], nullptr);
+                    } else {
+                        auto line = juce::ValueTree{ "Line", { { "index", i }, { "text", text.toString() }}};
+                        textData.addChild(line, i, nullptr);
+                    }
+                }
+                complete("true");
+            } else {
+                complete("false");
+                jassert("hasn't state: ", id);
+            }
         })
       /*.withResourceProvider(
           [this](const auto& url) { return getResource(url); },

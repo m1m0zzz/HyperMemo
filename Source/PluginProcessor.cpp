@@ -52,20 +52,32 @@ HyperMemoAudioProcessor::HyperMemoAudioProcessor()
     }
   )
 {
+  //juce::StringArray texts;
+  //for (size_t i = 0; i < MAX_MIDI_NOTE_NUMS; i++) {
+  //  texts.add("");
+  //}
+  //state.setProperty("texts", juce::var{ texts }, nullptr);
   DBG("===");
   DBG(state.getProperty("mode").toString());
-  auto a = state.getProperty("fullScreen");
-  bool fullScreen;
-  if (a.isBool()) {
-    DBG("a is bool");
-    fullScreen = (bool)a;
-  }
   DBG(state.getProperty("fullScreen").toString());
   DBG(state.getProperty("editNoteNumber").toString());
   DBG(state.getProperty("fontColor").toString());
   DBG(state.getProperty("bgColor").toString());
   DBG(state.getProperty("fontSize").toString());
   DBG(state.getProperty("textAlign").toString());
+  //DBG(state.getProperty("texts").toString());
+  //DBG(state.getProperty("texts")[0].toString());
+  //DBG(state.getProperty("texts")[1].toString());
+  const auto textData = state.getChildWithName("TextData");
+  DBG(textData.getNumChildren());
+  DBG(textData.toXmlString());
+  for (auto it = textData.begin(); it != textData.end(); ++it) {
+    auto line = *it;
+    int index = line.getProperty("index");
+    juce::String text = line.getProperty("text");
+    DBG("[" << index << "]");
+    DBG(text);
+  }
 }
 
 HyperMemoAudioProcessor::~HyperMemoAudioProcessor()
@@ -203,8 +215,8 @@ void HyperMemoAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
     auto editor = state.getOrCreateChildWithName("editor", nullptr);
-    editor.setProperty("size-x", editorSize.x, nullptr);
-    editor.setProperty("size-y", editorSize.y, nullptr);
+    editor.setProperty("sizeX", editorSize.x, nullptr);
+    editor.setProperty("sizeY", editorSize.y, nullptr);
 
     juce::MemoryOutputStream stream(destData, false);
     state.writeToStream(stream);
@@ -220,8 +232,8 @@ void HyperMemoAudioProcessor::setStateInformation (const void* data, int sizeInB
 
       auto editor = state.getChildWithName("editor");
       if (editor.isValid()) {
-        editorSize.setX(editor.getProperty("size-x", 1280));
-        editorSize.setY(editor.getProperty("size-y", 720));
+        editorSize.setX(editor.getProperty("sizeX", 1280));
+        editorSize.setY(editor.getProperty("sizeY", 720));
         if (auto* activeEditor = getActiveEditor())
           activeEditor->setSize(editorSize.x, editorSize.y);
       }
