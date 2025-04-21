@@ -52,32 +52,32 @@ HyperMemoAudioProcessor::HyperMemoAudioProcessor()
     }
   )
 {
-  //juce::StringArray texts;
-  //for (size_t i = 0; i < MAX_MIDI_NOTE_NUMS; i++) {
-  //  texts.add("");
-  //}
-  //state.setProperty("texts", juce::var{ texts }, nullptr);
-  DBG("===");
-  DBG(state.getProperty("mode").toString());
-  DBG(state.getProperty("fullScreen").toString());
-  DBG(state.getProperty("editNoteNumber").toString());
-  DBG(state.getProperty("fontColor").toString());
-  DBG(state.getProperty("bgColor").toString());
-  DBG(state.getProperty("fontSize").toString());
-  DBG(state.getProperty("textAlign").toString());
-  //DBG(state.getProperty("texts").toString());
-  //DBG(state.getProperty("texts")[0].toString());
-  //DBG(state.getProperty("texts")[1].toString());
-  const auto textData = state.getChildWithName("TextData");
-  DBG(textData.getNumChildren());
-  DBG(textData.toXmlString());
-  for (auto it = textData.begin(); it != textData.end(); ++it) {
-    auto line = *it;
-    int index = line.getProperty("index");
-    juce::String text = line.getProperty("text");
-    DBG("[" << index << "]");
-    DBG(text);
-  }
+    //juce::StringArray texts;
+    //for (size_t i = 0; i < MAX_MIDI_NOTE_NUMS; i++) {
+    //  texts.add("");
+    //}
+    //state.setProperty("texts", juce::var{ texts }, nullptr);
+    DBG("===");
+    DBG(state.getProperty("mode").toString());
+    DBG(state.getProperty("fullScreen").toString());
+    DBG(state.getProperty("editNoteNumber").toString());
+    DBG(state.getProperty("fontColor").toString());
+    DBG(state.getProperty("bgColor").toString());
+    DBG(state.getProperty("fontSize").toString());
+    DBG(state.getProperty("textAlign").toString());
+    //DBG(state.getProperty("texts").toString());
+    //DBG(state.getProperty("texts")[0].toString());
+    //DBG(state.getProperty("texts")[1].toString());
+    const auto textData = state.getChildWithName("TextData");
+    DBG(textData.getNumChildren());
+    DBG(textData.toXmlString());
+    for (auto it = textData.begin(); it != textData.end(); ++it) {
+        auto line = *it;
+        int index = line.getProperty("index");
+        juce::String text = line.getProperty("text");
+        DBG("[" << index << "]");
+        DBG(text);
+    }
 }
 
 HyperMemoAudioProcessor::~HyperMemoAudioProcessor()
@@ -195,6 +195,19 @@ void HyperMemoAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     playHead->getCurrentPosition(currentPositionInfo);
     ppqPosition = currentPositionInfo.ppqPosition;
     timeInSeconds = currentPositionInfo.timeInSamples;
+
+    // midi trigger mode
+    int lastHitNoteNumber = -1;
+    for (const auto metadata : midiMessages) {
+        auto message = metadata.getMessage();
+        if (message.isNoteOn()) {
+            lastHitNoteNumber = message.getNoteNumber();
+            //DBG(message.getMidiNoteName(message.getNoteNumber(), true, true, 4));
+        }
+    }
+    if (lastHitNoteNumber != -1) {
+        editNoteNumber = lastHitNoteNumber;
+    }
 }
 
 //==============================================================================
@@ -249,10 +262,15 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 
 juce::Point<int> HyperMemoAudioProcessor::getSavedSize() const
 {
-  return editorSize;
+    return editorSize;
 }
 
 void HyperMemoAudioProcessor::setSavedSize(const juce::Point<int>& size)
 {
-  editorSize = size;
+    editorSize = size;
+}
+
+int HyperMemoAudioProcessor::getEditNoteNumber() const
+{
+    return editNoteNumber;
 }

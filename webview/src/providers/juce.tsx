@@ -136,6 +136,21 @@ export function JuceProvider({ children, ...props }: JuceProviderProps) {
     load()
   }, [])
 
+  useEffect(() => {
+    console.log('add event listener')
+    const id = window.__JUCE__.backend.addEventListener(
+      'onChangeEditNoteNumber',
+      (num) => {
+        console.log(num)
+        setSavedStates({...savedStates, editNoteNumber: num})
+      }
+    )
+
+    return () => {
+      window.__JUCE__.backend.removeEventListener(id)
+    }
+  }, [])
+
   return (
     <JuceContext.Provider value={storeRef.current}>
       {children}

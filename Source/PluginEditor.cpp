@@ -9,6 +9,15 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+#ifdef DEBUG
+#define WEB_VIEW_FROM_DEV_SERVER 1
+#endif // DEBUG
+
+
+#ifndef WEB_VIEW_FROM_DEV_SERVER
+#define WEB_VIEW_FROM_DEV_SERVER 0
+#endif
+
 //==============================================================================
 HyperMemoAudioProcessorEditor::HyperMemoAudioProcessorEditor (HyperMemoAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p), state(p.state)
@@ -21,9 +30,14 @@ HyperMemoAudioProcessorEditor::HyperMemoAudioProcessorEditor (HyperMemoAudioProc
     setResizable(true, true);
 
     addAndMakeVisible(webComponent);
-    webComponent.goToURL (localDevServerAddress);
-    //webComponent.goToURL(juce::WebBrowserComponent::getResourceProviderRoot());
 
+    startTimerHz(30);
+
+#if WEB_VIEW_FROM_DEV_SERVER
+    webComponent.goToURL(localDevServerAddress);
+#else
+    webComponent.goToURL(juce::WebBrowserComponent::getResourceProviderRoot());
+#endif
 }
 
 HyperMemoAudioProcessorEditor::~HyperMemoAudioProcessorEditor()
@@ -54,6 +68,15 @@ void HyperMemoAudioProcessorEditor::resized() {
     audioProcessor.setSavedSize({ getWidth(), getHeight() });
 }
 
+void HyperMemoAudioProcessorEditor::timerCallback()
+{
+    const auto editNumber = audioProcessor.getEditNoteNumber();
+    if (editNoteNumberMemo != editNumber) {
+        webComponent.emitEventIfBrowserIsVisible("onChangeEditNoteNumber", juce::var{ editNumber });
+        editNoteNumberMemo = editNumber;
+    }
+}
+
 bool HyperMemoAudioProcessorEditor::hasState(juce::String id)
 {
   return
@@ -64,7 +87,6 @@ bool HyperMemoAudioProcessorEditor::hasState(juce::String id)
     id == "fontSize" ||
     id == "textAlign" ||
     id == "editNoteNumber";
-    //id == "texts";
 }
 
 juce::var HyperMemoAudioProcessorEditor::getState(juce::String id)
@@ -75,6 +97,15 @@ juce::var HyperMemoAudioProcessorEditor::getState(juce::String id)
 void HyperMemoAudioProcessorEditor::setState(juce::String id, const juce::var& newValue)
 {
   state.setProperty(id, newValue, nullptr);
+}
+
+static auto streamToVector(juce::InputStream& stream)
+{
+    std::vector<std::byte> result((size_t)stream.getTotalLength());
+    stream.setPosition(0);
+    [[maybe_unused]] const auto bytesRead = stream.read(result.data(), result.size());
+    //jassert(bytesRead == (ssize_t)result.size());
+    return result;
 }
 
 std::optional<juce::WebBrowserComponent::Resource>

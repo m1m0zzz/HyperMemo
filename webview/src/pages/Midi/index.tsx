@@ -99,12 +99,13 @@ export function Midi() {
               className={styles.piano}
               height={120}
               onPlayNote={(noteNumber) => {
+                console.log('play note: ', noteName(noteNumber))
                 setEditNoteNumber(noteNumber)
                 // onMidiNoteOn(1, noteNumber)
               }}
-              onStopNote={() => {
-                // onMidiNoteOff(1, noteNumber)
-              }}
+              // onStopNote={(noteNumber) => {
+              //   onMidiNoteOff(1, noteNumber)
+              // }}
             >
               <WhiteKey>
                 <KeyLabel
