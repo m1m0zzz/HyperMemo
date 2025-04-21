@@ -9,9 +9,9 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-#ifdef DEBUG
-#define WEB_VIEW_FROM_DEV_SERVER 1
-#endif // DEBUG
+//#ifdef DEBUG
+//#define WEB_VIEW_FROM_DEV_SERVER 1
+//#endif // DEBUG
 
 
 #ifndef WEB_VIEW_FROM_DEV_SERVER
@@ -114,23 +114,23 @@ HyperMemoAudioProcessorEditor::getResource(const juce::String& url) {
         ? juce::String{ "index.html" }
     : url.fromFirstOccurrenceOf("/", false, false);
 
-    //static auto streamZip = juce::MemoryInputStream(
-    //    juce::MemoryBlock(BinaryData::assets_zip, BinaryData::assets_zipSize),
-    //    true);
+    static auto streamZip = juce::MemoryInputStream(
+        juce::MemoryBlock(BinaryData::webview_zip, BinaryData::webview_zipSize),
+        true);
 
-    //static juce::ZipFile archive{streamZip};
+    static juce::ZipFile archive{streamZip};
 
-    //if (auto* entry = archive.getEntry(urlToRetrive)) {
-    //  auto entryStream = rawToUniquePtr(archive.createStreamForEntry(*entry));
-    //  std::vector<std::byte> result((size_t)entryStream->getTotalLength());
-    //  entryStream->setPosition(0);
-    //  entryStream->read(result.data(), result.size());
+    if (auto* entry = archive.getEntry(urlToRetrive)) {
+      auto entryStream = rawToUniquePtr(archive.createStreamForEntry(*entry));
+      std::vector<std::byte> result((size_t)entryStream->getTotalLength());
+      entryStream->setPosition(0);
+      entryStream->read(result.data(), result.size());
 
-    //  auto mime = getMimeForExtension(
-    //      entry->filename.fromLastOccurrenceOf(".", false, false).toLowerCase());
-    //  return juce::WebBrowserComponent::Resource{std::move(result),
-    //                                             std::move(mime)};
-    //}
+      auto mime = getMimeForExtension(
+          entry->filename.fromLastOccurrenceOf(".", false, false).toLowerCase());
+      return juce::WebBrowserComponent::Resource{std::move(result),
+                                                 std::move(mime)};
+    }
     return std::nullopt;
 }
 

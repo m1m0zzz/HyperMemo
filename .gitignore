@@ -2,3 +2,5 @@ build
 Builds
 JuceLibraryCode
 *.filtergraph
+
+Assets/*.zip

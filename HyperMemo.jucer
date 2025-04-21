@@ -5,6 +5,9 @@
               companyCopyright="mimoz" companyWebsite="m1m0zzz.github.io" companyEmail="contact.m1m0zzz@gmail.com"
               pluginCharacteristicsValue="pluginWantsMidiIn" pluginVST3Category="Tools">
   <MAINGROUP id="elPhz8" name="HyperMemo">
+    <GROUP id="{D75C58F2-640D-581E-D884-2C44CBE1F46B}" name="Assets">
+      <FILE id="E9nNNY" name="webview.zip" compile="0" resource="1" file="Assets/webview.zip"/>
+    </GROUP>
     <GROUP id="{BD7430F6-9B6D-9E72-2B52-BFC1AACB1C24}" name="Source">
       <FILE id="NNNpLd" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
