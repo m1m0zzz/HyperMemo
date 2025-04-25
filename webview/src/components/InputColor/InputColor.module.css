@@ -1,0 +1,48 @@
+.inputColor {
+  --height: 38px;
+
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: var(--height);
+  gap: 6px;
+  background-color: white;
+  padding: 0 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(54, 54, 52, 0.1);
+}
+
+.inputColor:hover, .inputColor:focus-within {
+  background-color: rgba(124, 124, 117, 0.1);
+  border-color: transparent;
+}
+
+.pickerButton {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.inputField[type="text"] {
+  display: block;
+  flex: 1 1 auto;
+  background: none;
+  width: 100%;
+  line-height: 1.5;
+  padding: 8px 6px 8px 2px;
+  outline: none;
+  border: none;
+  border-width: 0;
+}
+
+.cover {
+  position: absolute;
+  top: var(--height);
+  left: 0px;
+  z-index: 10;
+}

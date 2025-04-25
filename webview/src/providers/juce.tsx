@@ -41,7 +41,7 @@ const createJuceStore = (initProps: Partial<State>, changeState: JuceFunction) =
     fullScreen: false,
     modalIsOpen: false,
     editNoteNumber: noteNumber('C0'),
-    bgColor: '#ffffff',
+    bgColor: '#FFFFFF',
     fontColor: '#000000',
     fontSize: 32,
     textAlign: 'center',

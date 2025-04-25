@@ -11,9 +11,10 @@
     "zip": "npm-build-zip --source=dist --destination=../Assets --name=webview --name_only=true"
   },
   "dependencies": {
-    "@tremolo-ui/react": "^0.0.11",
+    "@tremolo-ui/react": "^0.0.12",
     "juce-framework-frontend-mirror": "^8.0.8-rc.1",
     "react": "^19.0.0",
+    "react-color": "^2.19.3",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
     "react-modal": "^3.16.3",
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@types/react": "^19.0.10",
+    "@types/react-color": "^3.0.13",
     "@types/react-dom": "^19.0.4",
     "@types/react-modal": "^3.16.3",
     "@vitejs/plugin-react-swc": "^3.8.0",

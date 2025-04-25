@@ -37,41 +37,41 @@ export function Midi() {
 
   return (
     <>
-      <main className={styles.main}>
-        {!fullScreen &&
-          <nav className={styles.header}>
-            <div className={styles.title}>Trigger Memo</div>
-            <div className={styles.noteControl}>
-              <IconButton onClick={() => setEditNoteNumber(clamp(editNoteNumber - 1, MIN_NOTE_NUMBER, MAX_NOTE_NUMBER))}>
-                <FiChevronLeft size={'1rem'} />
-              </IconButton>
-              <span className={styles.currentNote}>{noteName(editNoteNumber)}</span>
-              <IconButton onClick={() => setEditNoteNumber(clamp(editNoteNumber + 1, MIN_NOTE_NUMBER, MAX_NOTE_NUMBER))}>
-                <FiChevronRight size={'1rem'} />
-              </IconButton>
-            </div>
-            <div className={styles.headerRight}>
-              <IconButton title='Save'>
-                <FiSave />
-              </IconButton>
-              <IconButton title='Open settings' onClick={openModal}>
-                <FiSettings />
-              </IconButton>
-            </div>
-          </nav>
-        }
+      <main className={styles.main}
+        style={{ backgroundColor: bgColor }}
+      >
+        <nav className={styles.header} data-full-screen={fullScreen}>
+          <div className={styles.title}>Trigger Memo</div>
+          <div className={styles.noteControl}>
+            <IconButton onClick={() => setEditNoteNumber(clamp(editNoteNumber - 1, MIN_NOTE_NUMBER, MAX_NOTE_NUMBER))}>
+              <FiChevronLeft size={'1rem'} />
+            </IconButton>
+            <span className={styles.currentNote}>{noteName(editNoteNumber)}</span>
+            <IconButton onClick={() => setEditNoteNumber(clamp(editNoteNumber + 1, MIN_NOTE_NUMBER, MAX_NOTE_NUMBER))}>
+              <FiChevronRight size={'1rem'}/>
+            </IconButton>
+          </div>
+          <div className={styles.headerRight}>
+            <IconButton title='Save'>
+              <FiSave />
+            </IconButton>
+            <IconButton title='Open settings' onClick={openModal}>
+              <FiSettings />
+            </IconButton>
+          </div>
+        </nav>
         <div
           className={styles.content}
           style={{
-            backgroundColor: bgColor,
             color: fontColor,
             fontSize: fontSize,
           }}
-          data-full-screen={fullScreen}
+          data-full-screen="true"
         >
           <div className={styles.words}>
             <textarea
               value={texts[editNoteNumber]}
+              maxLength={600}
               style={{
                 width: '100%',
                 textAlign: textAlign
@@ -86,42 +86,31 @@ export function Midi() {
             </IconButton>
           </div>
         </div>
-        {fullScreen ||
-          <div
-            ref={pianoContainerRef}
-            className={styles.pianoContainer}
-            style={{
-              backgroundColor: bgColor
-            }}
+        <div
+          ref={pianoContainerRef}
+          className={styles.pianoContainer}
+          data-full-screen={fullScreen}
+        >
+          <Piano
+            noteRange={{first: MIN_NOTE_NUMBER, last: MAX_NOTE_NUMBER}}
+            className={styles.piano}
+            height={120}
+            onPlayNote={setEditNoteNumber}
           >
-            <Piano
-              noteRange={{first: MIN_NOTE_NUMBER, last: MAX_NOTE_NUMBER}}
-              className={styles.piano}
-              height={120}
-              onPlayNote={(noteNumber) => {
-                console.log('play note: ', noteName(noteNumber))
-                setEditNoteNumber(noteNumber)
-                // onMidiNoteOn(1, noteNumber)
-              }}
-              // onStopNote={(noteNumber) => {
-              //   onMidiNoteOff(1, noteNumber)
-              // }}
-            >
-              <WhiteKey>
-                <KeyLabel
-                  label={(noteNumber) => {
-                    const name = noteName(noteNumber)
-                    return name.startsWith('C') ? name : null
-                  }}
-                  style={{
-                    border: 'none'
-                  }}
-                />
-              </WhiteKey>
-              <BlackKey />
-            </Piano>
-          </div>
-        }
+            <WhiteKey>
+              <KeyLabel
+                label={(noteNumber) => {
+                  const name = noteName(noteNumber)
+                  return name.startsWith('C') ? name : null
+                }}
+                style={{
+                  border: 'none'
+                }}
+              />
+            </WhiteKey>
+            <BlackKey />
+          </Piano>
+        </div>
       </main>
       <ConfigModal />
     </>

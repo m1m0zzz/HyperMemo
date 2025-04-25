@@ -9,14 +9,12 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-//#ifdef DEBUG
-//#define WEB_VIEW_FROM_DEV_SERVER 1
-//#endif // DEBUG
-
-
-#ifndef WEB_VIEW_FROM_DEV_SERVER
+#ifdef DEBUG
+#define WEB_VIEW_FROM_DEV_SERVER 1
+#else
 #define WEB_VIEW_FROM_DEV_SERVER 0
-#endif
+#endif // DEBUG
+
 
 //==============================================================================
 HyperMemoAudioProcessorEditor::HyperMemoAudioProcessorEditor (HyperMemoAudioProcessor& p)
@@ -25,8 +23,10 @@ HyperMemoAudioProcessorEditor::HyperMemoAudioProcessorEditor (HyperMemoAudioProc
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     auto size = p.getSavedSize();
+    DBG(size.x);
+    DBG(size.y);
     setSize(size.x, size.y);
-    setResizeLimits(400, 300, 3840, 2160);
+    setResizeLimits(460, 340, 3840, 2160);
     setResizable(true, true);
 
     addAndMakeVisible(webComponent);
@@ -45,20 +45,6 @@ HyperMemoAudioProcessorEditor::~HyperMemoAudioProcessorEditor()
 }
 
 //==============================================================================
-//void HyperMemoAudioProcessorEditor::paint (juce::Graphics& g)
-//{
-//    // (Our component is opaque, so we must completely fill the background with a solid colour)
-//    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-//
-//    g.setColour (juce::Colours::white);
-//    g.setFont (juce::FontOptions (15.0f));
-//    juce::StringArray strs{
-//        "pos: " + juce::String { floor(audioProcessor.ppqPosition) },
-//        "timeInSeconds: " + juce::String { floor(audioProcessor.timeInSeconds / 1000) },
-//    };
-//    g.drawFittedText(strs.joinIntoString("\n"), getLocalBounds(), juce::Justification::centred, strs.size());
-//}
-
 void HyperMemoAudioProcessorEditor::paint(juce::Graphics& g) {
     g.fillAll(getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
 }

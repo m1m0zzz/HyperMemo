@@ -241,15 +241,18 @@ void HyperMemoAudioProcessor::setStateInformation (const void* data, int sizeInB
     // whose contents will have been created by the getStateInformation() call.
     juce::ValueTree tree = juce::ValueTree::readFromData(data, sizeInBytes);
     if (tree.isValid()) {
-      state = tree;
-
-      auto editor = state.getChildWithName("editor");
-      if (editor.isValid()) {
-        editorSize.setX(editor.getProperty("sizeX", 1280));
-        editorSize.setY(editor.getProperty("sizeY", 720));
-        if (auto* activeEditor = getActiveEditor())
-          activeEditor->setSize(editorSize.x, editorSize.y);
-      }
+        state = tree;
+        auto editor = state.getChildWithName("editor");
+        if (editor.isValid()) {
+            editorSize.setX(editor.getProperty("sizeX", 1280));
+            editorSize.setY(editor.getProperty("sizeY", 720));
+            if (auto* activeEditor = getActiveEditor()) {
+                activeEditor->setSize(editorSize.x, editorSize.y);
+            }
+        }
+    } else {
+        editorSize.setX(1280);
+        editorSize.setY(720);
     }
 }
 

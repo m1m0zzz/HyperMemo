@@ -4,7 +4,6 @@ import { Midi } from "./pages/Midi"
 
 import { JuceProvider, useJuceContext } from "./providers/juce"
 
-import "@tremolo-ui/react/styles/index.css"
 
 function App() {
   return (
