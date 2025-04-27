@@ -16,6 +16,8 @@
       <FILE id="A0yW9a" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="Wk4gV6" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <FILE id="AYVQ5u" name="WebBrowserComponentTS.h" compile="0" resource="0"
+            file="Source/WebBrowserComponentTS.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>

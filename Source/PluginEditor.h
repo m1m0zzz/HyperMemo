@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "WebBrowserComponentTS.h"
 
 #if JUCE_ANDROID
 // The localhost is available on this address to the emulator
@@ -18,8 +19,8 @@ const juce::String localDevServerAddress = "http://10.0.2.2:5173/";
 const juce::String localDevServerAddress = "http://localhost:5173/";
 #endif
 
-struct SinglePageBrowser : juce::WebBrowserComponent {
-    using WebBrowserComponent::WebBrowserComponent;
+struct SinglePageBrowser : public WebBrowserComponentTS {
+    using WebBrowserComponentTS::WebBrowserComponentTS;
 
     // Prevent page loads from navigating away from our single page web app
     bool pageAboutToLoad(const juce::String& newURL) override {
@@ -53,6 +54,9 @@ private:
     juce::WebControlParameterIndexReceiver controlParameterIndexReceiver;
 
     SinglePageBrowser webComponent{
+        WebBrowserComponentTS::getSourcePath("../webview/src/types").getFullPathName(),
+        "juce.d.ts",
+        "juce-framework-frontend-mirror",
         juce::WebBrowserComponent::Options{}
         .withBackend(juce::WebBrowserComponent::Options::Backend::webview2)
         .withWinWebView2Options(
@@ -65,32 +69,33 @@ private:
             .withInitialisationData("name", juce::var{ "mimoz" })
             .withInitialisationData("num", juce::var{ 123 })
             .withNativeFunction("loadState",
-            [safe_this = juce::Component::SafePointer(this)](auto& var, auto complete)
-            {
-                auto id = var[0].toString();
-                DBG("loadState: " << id);
-                if (safe_this->hasState(id)) {
-                    DBG(safe_this->getState(id).toString());
-                    complete(safe_this->getState(id));
-                } else if (id == "texts") {
-                    juce::ValueTree textData = safe_this->state.getChildWithName("TextData");
-                    juce::StringArray texts;
-                    for (size_t i = 0; i < MAX_MIDI_NOTE_NUMS; i++) {
-                        texts.add("");
+                [safe_this = juce::Component::SafePointer(this)](auto& var, auto complete)
+                {
+                    auto id = var[0].toString();
+                    DBG("loadState: " << id);
+                    if (safe_this->hasState(id)) {
+                        DBG(safe_this->getState(id).toString());
+                        complete(safe_this->getState(id));
+                    } else if (id == "texts") {
+                        juce::ValueTree textData = safe_this->state.getChildWithName("TextData");
+                        juce::StringArray texts;
+                        for (size_t i = 0; i < MAX_MIDI_NOTE_NUMS; i++) {
+                            texts.add("");
+                        }
+                        for (auto it = textData.begin(); it != textData.end(); ++it) {
+                            auto line = *it;
+                            int index = line.getProperty("index");
+                            juce::String text = line.getProperty("text");
+                            DBG(index << ": " << text);
+                            texts.set(index, text);
+                        }
+                        // TODO: use hash map
+                        complete(juce::var{ texts });
+                    } else {
+                        jassert("hasn't state: ", id);
                     }
-                    for (auto it = textData.begin(); it != textData.end(); ++it) {
-                        auto line = *it;
-                        int index = line.getProperty("index");
-                        juce::String text = line.getProperty("text");
-                        DBG(index << ": " << text);
-                        texts.set(index, text);
-                    }
-                    // TODO: use hash map
-                    complete(juce::var{ texts });
-                } else {
-                    jassert("hasn't state: ", id);
                 }
-            })
+            )
             .withNativeFunction("changeState",
                 [safe_this = juce::Component::SafePointer(this)](auto& var, auto complete)
                 {
@@ -124,10 +129,12 @@ private:
                         complete(false);
                         jassert("hasn't state: ", id);
                     }
-                })
+                }
+            )
             .withResourceProvider(
                 [this](const auto& url) { return getResource(url); },
-                juce::URL{"http://localhost:5173/"}.getOrigin())
+                juce::URL{ localDevServerAddress }.getOrigin()
+            )
     };
 
     std::optional<juce::WebBrowserComponent::Resource> getResource(const juce::String& url);
