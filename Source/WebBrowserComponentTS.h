@@ -1,25 +1,9 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
-*/
-
 #pragma once
 
 #include <JuceHeader.h>
 
 class WebBrowserComponentTS : public juce::WebBrowserComponent {
 public:
-    //class Options : public juce::WebBrowserComponent::Options
-    //{
-    //public:
-    //    Options withNativeFunction(const juce::Identifier& name, NativeFunction callback) {
-    //        juce::WebBrowserComponent::Options::withNativeFunction(name, callback);
-    //    }
-    //};
-
     WebBrowserComponentTS(
         const juce::String& typesDir,
         const juce::String& typesFile,
@@ -79,7 +63,7 @@ private:
             "",
             "/*",
             "This file was automatically created by the WebBrowserComponentTS program.",
-            "Detailed documentation is here, TODO",
+            "Detailed documentation is here, https://github.com/m1m0zzz/WebBrowserComponentTS",
             "*/",
             "",
             "declare module '" + moduleName + "' {",

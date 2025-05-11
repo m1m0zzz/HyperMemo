@@ -23,6 +23,7 @@ export function Midi() {
   const fontColor = useJuceContext((s) => s.fontColor)
   const bgColor = useJuceContext((s) => s.bgColor)
   const fontSize = useJuceContext((s) => s.fontSize)
+  const fontName = useJuceContext((s) => s.fontName)
   const textAlign = useJuceContext((s) => s.textAlign)
   const texts = useJuceContext((s) => s.texts)
   const setTextAt = useJuceContext((s) => s.setTextAt)
@@ -74,7 +75,8 @@ export function Midi() {
               maxLength={600}
               style={{
                 width: '100%',
-                textAlign: textAlign
+                textAlign: textAlign,
+                fontFamily: `${fontName}, system-ui`
               }}
               onChange={(e) => setTextAt(e.target.value, editNoteNumber)}
             >

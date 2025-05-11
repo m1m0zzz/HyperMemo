@@ -34,6 +34,7 @@ HyperMemoAudioProcessor::HyperMemoAudioProcessor()
       { "fontColor", "#000000" },
       { "bgColor", "#ffffff" },
       { "fontSize", 32 },
+      { "fontName", "system-ui"},
       { "textAlign", "center" },
     },
     {

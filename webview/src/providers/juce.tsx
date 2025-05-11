@@ -14,6 +14,7 @@ type State = {
   fontColor: string
   bgColor: string
   fontSize: number
+  fontName: string
   textAlign: TextAlign
   texts: string[]
 }
@@ -26,6 +27,7 @@ type Action = {
   setBgColor: (v: string) => void
   setFontColor: (v: string) => void
   setFontSize: (v: number) => void
+  setFontName: (v: string) => void
   setTextAlign: (v: TextAlign) => void
   setTextAt: (text: string, index: number) => void
 }
@@ -44,6 +46,7 @@ const createJuceStore = (initProps: Partial<State>, changeState: JuceFunction) =
     bgColor: '#FFFFFF',
     fontColor: '#000000',
     fontSize: 32,
+    fontName: 'system-ui',
     textAlign: 'center',
     texts: [],
   }
@@ -81,6 +84,11 @@ const createJuceStore = (initProps: Partial<State>, changeState: JuceFunction) =
       set(() => {
         changeState('fontSize', value)
         return { fontSize: value }
+      }),
+    setFontName: (value) =>
+      set(() => {
+        changeState('fontName', value)
+        return { fontName: value }
       }),
     setTextAlign: (value) =>
       set(() => {
@@ -129,6 +137,7 @@ export function JuceProvider({ children, ...props }: JuceProviderProps) {
         bgColor: await loadState('bgColor'),
         fontColor: await loadState('fontColor'),
         fontSize: Number(await loadState('fontSize')),
+        fontName: await loadState('fontName'),
         textAlign: await loadState('textAlign'),
         texts: await loadState('texts'),
       })

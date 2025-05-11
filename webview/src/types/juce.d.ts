@@ -2,7 +2,7 @@
 
 /*
 This file was automatically created by the WebBrowserComponentTS program.
-Detailed documentation is here, TODO
+Detailed documentation is here, https://github.com/m1m0zzz/WebBrowserComponentTS
 */
 
 declare module 'juce-framework-frontend-mirror' {

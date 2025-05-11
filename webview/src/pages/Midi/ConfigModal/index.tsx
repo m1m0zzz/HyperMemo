@@ -6,6 +6,8 @@ import { clamp } from '@tremolo-ui/functions'
 import { InputColor } from '../../../components/InputColor'
 import { TextAlign, useJuceContext } from '../../../providers/juce'
 
+import { FontSelector } from './fontSelector'
+
 import styles from './styles.module.css'
 
 Modal.setAppElement("#root")
@@ -39,7 +41,7 @@ export function ConfigModal() {
           right: 'auto',
           bottom: 'auto',
           minWidth: 500,
-          minHeight: '50vh',
+          minHeight: 'max(50vh, 440px)',
           marginRight: '-50%',
           transform: 'translate(-50%, -50%)',
           padding: 0
@@ -72,6 +74,7 @@ export function ConfigModal() {
           <div>
             <div className={styles.label}>font size</div>
             <NumberInput
+              // variant='filled'
               value={fontSize}
               min={8}
               max={200}
@@ -95,7 +98,8 @@ export function ConfigModal() {
             </select>
           </div>
           <div>
-            <div>font</div>
+            <div className={styles.label}>font</div>
+            <FontSelector />
           </div>
         </section>
       </div>

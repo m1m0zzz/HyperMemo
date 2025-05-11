@@ -67,7 +67,7 @@ private:
     juce::AudioPlayHead* playHead = nullptr;
     juce::AudioPlayHead::CurrentPositionInfo currentPositionInfo;
 
-    juce::Point<int> editorSize;
+    juce::Point<int> editorSize = { 1280, 720 };
 
     double ppqPosition = 0.0;
     double timeInSeconds = 0.0;

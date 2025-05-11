@@ -26,7 +26,7 @@ HyperMemoAudioProcessorEditor::HyperMemoAudioProcessorEditor (HyperMemoAudioProc
     DBG(size.x);
     DBG(size.y);
     setSize(size.x, size.y);
-    setResizeLimits(460, 340, 3840, 2160);
+    setResizeLimits(500, 500, 3840, 2160);
     setResizable(true, true);
 
     addAndMakeVisible(webComponent);
