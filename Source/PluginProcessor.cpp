@@ -22,7 +22,7 @@ HyperMemoAudioProcessor::HyperMemoAudioProcessor()
       )
 #endif
   ,
-  parameters(*this, &undoManager, juce::Identifier("parameters"), {}),
+  //parameters(*this, &undoManager, juce::Identifier("parameters"), {}),
   state(
     "States",
     {
@@ -35,6 +35,7 @@ HyperMemoAudioProcessor::HyperMemoAudioProcessor()
       { "bgColor", "#ffffff" },
       { "fontSize", 32 },
       { "fontName", "system-ui"},
+      { "fontWeight", "400"},
       { "textAlign", "center" },
     },
     {

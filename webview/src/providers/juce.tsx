@@ -1,6 +1,6 @@
 import { noteNumber } from '@tremolo-ui/functions'
 import { getNativeFunction } from 'juce-framework-frontend-mirror'
-import { createContext, PropsWithChildren, useContext, useEffect, useRef, useState } from 'react'
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { createStore, useStore } from 'zustand'
 
 export type TextAlign = 'left' | 'center' | 'right'
@@ -15,6 +15,7 @@ type State = {
   bgColor: string
   fontSize: number
   fontName: string
+  fontWeight: string
   textAlign: TextAlign
   texts: string[]
 }
@@ -28,6 +29,7 @@ type Action = {
   setFontColor: (v: string) => void
   setFontSize: (v: number) => void
   setFontName: (v: string) => void
+  setFontWeight: (v: string) => void
   setTextAlign: (v: TextAlign) => void
   setTexts: (texts: string[]) => void
   setTextAt: (text: string, index: number) => void
@@ -40,7 +42,7 @@ type JuceFunction = (...args: any[]) => number | Promise<any>
 
 const createJuceStore = (initProps: Partial<State>, changeState: JuceFunction) => {
   const DEFAULT_STATES: State = {
-    mode: 'init',
+    mode: 'midi',
     fullScreen: false,
     modalIsOpen: false,
     editNoteNumber: noteNumber('C0'),
@@ -48,6 +50,7 @@ const createJuceStore = (initProps: Partial<State>, changeState: JuceFunction) =
     fontColor: '#000000',
     fontSize: 32,
     fontName: 'system-ui',
+    fontWeight: '400',
     textAlign: 'center',
     texts: [],
   }
@@ -91,6 +94,11 @@ const createJuceStore = (initProps: Partial<State>, changeState: JuceFunction) =
         changeState('fontName', value)
         return { fontName: value }
       }),
+    setFontWeight: (value) =>
+      set(() => {
+        changeState('fontWeight', value)
+        return { fontWeight: value }
+      }),
     setTextAlign: (value) =>
       set(() => {
         changeState('textAlign', value)
@@ -115,6 +123,12 @@ const JuceContext = createContext<JuceStore | null>(null)
 
 type JuceProviderProps = PropsWithChildren<Partial<State>>
 
+function cleanObject<T extends object>(obj: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, v]) => v !== undefined)
+  ) as Partial<T>
+}
+
 export function JuceProvider({ children, ...props }: JuceProviderProps) {
   const storeRef = useRef<JuceStore>(null)
   const [savedStates, setSavedStates] = useState<Partial<State>>({})
@@ -122,17 +136,35 @@ export function JuceProvider({ children, ...props }: JuceProviderProps) {
   const loadState = getNativeFunction('loadState')
   const changeState = getNativeFunction('changeState')
 
+  const loadInitialData = useCallback(() => {
+    const data = window.__JUCE__.initialisationData
+    return cleanObject<Partial<State>>({
+      mode: data.mode[0],
+      fullScreen: data.fullScreen[0],
+      editNoteNumber: data.editNoteNumber[0],
+      bgColor: data.bgColor[0],
+      fontColor: data.fontColor[0],
+      fontSize: data.fontSize[0],
+      fontName: data.fontName[0],
+      fontWeight: data.fontWeight[0],
+      textAlign: data.textAlign[0],
+      texts: data.texts[0],
+    })
+  }, [])
+
   if (!storeRef.current) {
-    storeRef.current = createJuceStore({...savedStates, ...props}, changeState)
+    const initials = loadInitialData()
+    storeRef.current = createJuceStore({...savedStates, ...initials, ...props}, changeState)
   }
 
   useEffect(() => {
     if (storeRef.current) {
-      storeRef.current.setState({...savedStates, ...props})
+      storeRef.current.setState({...savedStates,...props})
     } else {
-      storeRef.current = createJuceStore({...savedStates, ...props}, changeState)
+      const initials = loadInitialData()
+      storeRef.current = createJuceStore({...savedStates, ...initials, ...props}, changeState)
     }
-  }, [props, savedStates])
+  }, [changeState, loadInitialData, props, savedStates])
 
   useEffect(() => {
     const load = async () => {
@@ -144,6 +176,7 @@ export function JuceProvider({ children, ...props }: JuceProviderProps) {
         fontColor: await loadState('fontColor'),
         fontSize: Number(await loadState('fontSize')),
         fontName: await loadState('fontName'),
+        fontWeight: await loadState('fontWeight'),
         textAlign: await loadState('textAlign'),
         texts: await loadState('texts'),
       })
@@ -152,11 +185,10 @@ export function JuceProvider({ children, ...props }: JuceProviderProps) {
   }, [])
 
   useEffect(() => {
-    console.log('add event listener')
+    // NOTE: Process to change editNumber by midi input.
     const id = window.__JUCE__.backend.addEventListener(
       'onChangeEditNoteNumber',
       (num) => {
-        console.log(num)
         setSavedStates({...savedStates, editNoteNumber: num})
       }
     )
@@ -173,6 +205,7 @@ export function JuceProvider({ children, ...props }: JuceProviderProps) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useJuceContext<T>(selector: (state: State & Action) => T): T {
   const store = useContext(JuceContext)
   if (!store) throw new Error('Missing JuceContext.Provider in the tree')

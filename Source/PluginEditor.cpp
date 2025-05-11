@@ -18,7 +18,7 @@
 
 //==============================================================================
 HyperMemoAudioProcessorEditor::HyperMemoAudioProcessorEditor (HyperMemoAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p), state(p.state)
+    : AudioProcessorEditor (&p), audioProcessor (p), state(p.state), undoManager(p.undoManager)
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
@@ -65,24 +65,42 @@ void HyperMemoAudioProcessorEditor::timerCallback()
 
 bool HyperMemoAudioProcessorEditor::hasState(juce::String id)
 {
-  return
-    id == "mode" ||
-    id == "fullScreen" ||
-    id == "bgColor" ||
-    id == "fontColor" ||
-    id == "fontSize" ||
-    id == "textAlign" ||
-    id == "editNoteNumber";
+    return
+        id == "texts" ||
+        id == "mode" ||
+        id == "fullScreen" ||
+        id == "bgColor" ||
+        id == "fontColor" ||
+        id == "fontSize" ||
+        id == "textAlign" ||
+        id == "editNoteNumber";
 }
 
 juce::var HyperMemoAudioProcessorEditor::getState(juce::String id)
 {
-  return state.getProperty(id);
+    if (id == "texts") {
+        juce::ValueTree textData = state.getChildWithName("TextData");
+        juce::StringArray texts;
+        for (size_t i = 0; i < MAX_MIDI_NOTE_NUMS; i++) {
+            texts.add("");
+        }
+        for (auto it = textData.begin(); it != textData.end(); ++it) {
+            auto line = *it;
+            int index = line.getProperty("index");
+            juce::String text = line.getProperty("text");
+            DBG(index << ": " << text);
+            texts.set(index, text);
+        }
+        return juce::var{ texts };
+    }
+    else {
+        return state.getProperty(id);
+    }
 }
 
 void HyperMemoAudioProcessorEditor::setState(juce::String id, const juce::var& newValue)
 {
-  state.setProperty(id, newValue, nullptr);
+  state.setProperty(id, newValue, &undoManager);
 }
 
 static auto streamToVector(juce::InputStream& stream)

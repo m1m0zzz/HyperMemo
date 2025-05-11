@@ -58,6 +58,7 @@ private:
 
     HyperMemoAudioProcessor& audioProcessor;
     juce::ValueTree& state;
+    juce::UndoManager& undoManager;
     int editNoteNumberMemo = -1;
 
     juce::WebControlParameterIndexReceiver controlParameterIndexReceiver;
@@ -75,31 +76,25 @@ private:
             )
             //.withOptionsFrom(gainRelay)
             .withOptionsFrom(controlParameterIndexReceiver)
-            .withInitialisationData("name", juce::var{ "mimoz" })
-            .withInitialisationData("num", juce::var{ 123 })
+            .withInitialisationData("mode", getState("mode"))
+            .withInitialisationData("fullScreen", getState("fullScreen"))
+            .withInitialisationData("editNoteNumber", getState("editNoteNumber"))
+            .withInitialisationData("fontColor", getState("fontColor"))
+            .withInitialisationData("bgColor", getState("bgColor"))
+            .withInitialisationData("fontSize", getState("fontSize"))
+            .withInitialisationData("fontName", getState("fontName"))
+            .withInitialisationData("fontWeight", getState("fontWeight"))
+            .withInitialisationData("textAlign", getState("textAlign"))
+            .withInitialisationData("texts", getState("texts"))
             .withNativeFunction("loadState",
                 [safe_this = juce::Component::SafePointer(this)](auto& var, auto complete)
                 {
                     auto id = var[0].toString();
                     DBG("loadState: " << id);
-                    if (safe_this->hasState(id)) {
-                        DBG(safe_this->getState(id).toString());
+                    if (safe_this->hasState(id))
+                    {
+                        //DBG(safe_this->getState(id).toString());
                         complete(safe_this->getState(id));
-                    } else if (id == "texts") {
-                        juce::ValueTree textData = safe_this->state.getChildWithName("TextData");
-                        juce::StringArray texts;
-                        for (size_t i = 0; i < MAX_MIDI_NOTE_NUMS; i++) {
-                            texts.add("");
-                        }
-                        for (auto it = textData.begin(); it != textData.end(); ++it) {
-                            auto line = *it;
-                            int index = line.getProperty("index");
-                            juce::String text = line.getProperty("text");
-                            DBG(index << ": " << text);
-                            texts.set(index, text);
-                        }
-                        // TODO: use hash map
-                        complete(juce::var{ texts });
                     } else {
                         jassert("hasn't state: ", id);
                     }
@@ -127,10 +122,10 @@ private:
                             //DBG(i << ": " << text.toString());
                             auto line = textData.getChildWithProperty("index", juce::var{ i });
                             if (line.isValid()) {
-                                line.setProperty("text", texts[i], nullptr);
+                                line.setProperty("text", texts[i], &safe_this->undoManager);
                             } else {
                                 auto line = juce::ValueTree{ "Line", { { "index", i }, { "text", text.toString() }}};
-                                textData.addChild(line, i, nullptr);
+                                textData.addChild(line, i, &safe_this->undoManager);
                             }
                         }
                         complete(true);

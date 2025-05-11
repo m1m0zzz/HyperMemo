@@ -25,6 +25,7 @@ export function Midi() {
   const bgColor = useJuceContext((s) => s.bgColor)
   const fontSize = useJuceContext((s) => s.fontSize)
   const fontName = useJuceContext((s) => s.fontName)
+  const fontWeight = useJuceContext((s) => s.fontWeight)
   const textAlign = useJuceContext((s) => s.textAlign)
   const texts = useJuceContext((s) => s.texts)
   const setTextAt = useJuceContext((s) => s.setTextAt)
@@ -88,16 +89,16 @@ export function Midi() {
         >
           <div className={styles.words}>
             <textarea
-              value={texts[editNoteNumber] || ''}
+              value={texts[editNoteNumber] ?? ''}
               maxLength={600}
               style={{
                 width: '100%',
                 textAlign: textAlign,
-                fontFamily: `${fontName}, system-ui`
+                fontFamily: `${fontName}, system-ui`,
+                fontWeight: fontWeight
               }}
               onChange={(e) => setTextAt(e.target.value, editNoteNumber)}
-            >
-            </textarea>
+            />
           </div>
           <div className={styles.control}>
             <IconButton onClick={toggleFullScreen}>

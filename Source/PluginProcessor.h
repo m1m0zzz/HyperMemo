@@ -60,9 +60,9 @@ public:
     int getEditNoteNumber() const;
 
     juce::ValueTree state;
-private:
-    juce::AudioProcessorValueTreeState parameters;
     juce::UndoManager undoManager;
+private:
+    //juce::AudioProcessorValueTreeState parameters;
 
     juce::AudioPlayHead* playHead = nullptr;
     juce::AudioPlayHead::CurrentPositionInfo currentPositionInfo;

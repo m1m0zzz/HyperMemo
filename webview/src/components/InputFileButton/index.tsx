@@ -33,7 +33,6 @@ export function InputFileButton({
         onChange={(event) => {
           const file = event.currentTarget.files?.item(0)
           if (!file) return
-          console.log(file.name)
           const reader = new FileReader()
           reader.readAsText(file)
           reader.onload = () => onChange?.(reader.result as string)

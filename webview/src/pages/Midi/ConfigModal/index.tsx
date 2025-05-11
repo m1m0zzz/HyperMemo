@@ -24,6 +24,8 @@ export function ConfigModal() {
   const setFontColor = useJuceContext((s) => s.setFontColor)
   const fontSize = useJuceContext((s) => s.fontSize)
   const setFontSize = useJuceContext((s) => s.setFontSize)
+  const fontWeight = useJuceContext((s) => s.fontWeight)
+  const setFontWeight = useJuceContext((s) => s.setFontWeight)
   const textAlign = useJuceContext((s) => s.textAlign)
   const setTextAlign = useJuceContext((s) => s.setTextAlign)
   const setTexts = useJuceContext((s) => s.setTexts)
@@ -90,6 +92,21 @@ export function ConfigModal() {
             </NumberInput>
           </div>
           <div>
+            <div className={styles.label}>font</div>
+            <FontSelector />
+          </div>
+          <div>
+            <div className={styles.label}>font weight</div>
+            <select
+              value={fontWeight}
+              onChange={(e) => setFontWeight(e.currentTarget.value)}
+            >
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) =>
+                <option key={v * 100} value={v * 100}>{v * 100}</option>
+              )}
+            </select>
+          </div>
+          <div>
             <div className={styles.label}>text align</div>
             <select
               value={textAlign}
@@ -99,10 +116,6 @@ export function ConfigModal() {
               <option value='center'>center</option>
               <option value='right'>right</option>
             </select>
-          </div>
-          <div>
-            <div className={styles.label}>font</div>
-            <FontSelector />
           </div>
           <div style={{gridColumn: '1 / 3'}}>
             <div className={styles.label}>import text</div>
