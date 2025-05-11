@@ -19,8 +19,17 @@ const juce::String localDevServerAddress = "http://10.0.2.2:5173/";
 const juce::String localDevServerAddress = "http://localhost:5173/";
 #endif
 
-struct SinglePageBrowser : public WebBrowserComponentTS {
-    using WebBrowserComponentTS::WebBrowserComponentTS;
+// struct SinglePageBrowser : public WebBrowserComponentTS {
+//     using WebBrowserComponentTS::WebBrowserComponentTS;
+
+//     // Prevent page loads from navigating away from our single page web app
+//     bool pageAboutToLoad(const juce::String& newURL) override {
+//         return newURL == localDevServerAddress || newURL == getResourceProviderRoot();
+//     }
+// };
+
+struct SinglePageBrowser : public juce::WebBrowserComponent {
+    using WebBrowserComponent::WebBrowserComponent;
 
     // Prevent page loads from navigating away from our single page web app
     bool pageAboutToLoad(const juce::String& newURL) override {
@@ -54,9 +63,9 @@ private:
     juce::WebControlParameterIndexReceiver controlParameterIndexReceiver;
 
     SinglePageBrowser webComponent{
-        WebBrowserComponentTS::getSourcePath("../webview/src/types").getFullPathName(),
-        "juce.d.ts",
-        "juce-framework-frontend-mirror",
+        // WebBrowserComponentTS::getSourcePath("../webview/src/types").getFullPathName(),
+        // "juce.d.ts",
+        // "juce-framework-frontend-mirror",
         juce::WebBrowserComponent::Options{}
         .withBackend(juce::WebBrowserComponent::Options::Backend::webview2)
         .withWinWebView2Options(
