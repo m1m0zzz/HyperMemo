@@ -5,8 +5,9 @@ import { clamp } from '@tremolo-ui/functions'
 
 import { InputColor } from '../../../components/InputColor'
 import { TextAlign, useJuceContext } from '../../../providers/juce'
+import { InputFileButton } from '../../../components/InputFileButton'
 
-import { FontSelector } from './fontSelector'
+import { FontSelector } from './FontSelector'
 
 import styles from './styles.module.css'
 
@@ -25,6 +26,8 @@ export function ConfigModal() {
   const setFontSize = useJuceContext((s) => s.setFontSize)
   const textAlign = useJuceContext((s) => s.textAlign)
   const setTextAlign = useJuceContext((s) => s.setTextAlign)
+  const setTexts = useJuceContext((s) => s.setTexts)
+  const setEditNoteNumber = useJuceContext((s) => s.setEditNoteNumber)
 
   const closeModal = useCallback(() => setModalIsOpen(false), [setModalIsOpen])
 
@@ -41,7 +44,7 @@ export function ConfigModal() {
           right: 'auto',
           bottom: 'auto',
           minWidth: 500,
-          minHeight: 'max(50vh, 440px)',
+          minHeight: '440px',
           marginRight: '-50%',
           transform: 'translate(-50%, -50%)',
           padding: 0
@@ -100,6 +103,20 @@ export function ConfigModal() {
           <div>
             <div className={styles.label}>font</div>
             <FontSelector />
+          </div>
+          <div style={{gridColumn: '1 / 3'}}>
+            <div className={styles.label}>import text</div>
+            <InputFileButton
+              accept='.txt'
+              onChange={(rawText) => {
+                const texts = rawText.split("\n")
+                setTexts(texts)
+                setModalIsOpen(false)
+                setEditNoteNumber(0)
+              }}
+            >
+              Import text file (*.txt)
+            </InputFileButton>
           </div>
         </section>
       </div>

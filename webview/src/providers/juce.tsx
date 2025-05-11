@@ -29,6 +29,7 @@ type Action = {
   setFontSize: (v: number) => void
   setFontName: (v: string) => void
   setTextAlign: (v: TextAlign) => void
+  setTexts: (texts: string[]) => void
   setTextAt: (text: string, index: number) => void
 }
 
@@ -94,6 +95,11 @@ const createJuceStore = (initProps: Partial<State>, changeState: JuceFunction) =
       set(() => {
         changeState('textAlign', value)
         return { textAlign: value }
+      }),
+    setTexts: (texts) =>
+      set(() => {
+        changeState('texts', texts)
+        return { texts: texts }
       }),
     setTextAt: (text, index) =>
       set((state) => {

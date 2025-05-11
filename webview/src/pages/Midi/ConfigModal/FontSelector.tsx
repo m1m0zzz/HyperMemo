@@ -81,7 +81,7 @@ export function FontSelector() {
       >
         {customFonts.map((font) =>
           font == 'system-ui' ?
-            <option value='system-ui'>system-ui</option> :
+            <option key='system-ui' value='system-ui'>system-ui</option> :
             <Option key={font} fontName={font} />)}
         <option value={customId}>Custom</option>
       </select>

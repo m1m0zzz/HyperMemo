@@ -15,6 +15,7 @@ const MAX_NOTE_NUMBER = 127
 
 export function Midi() {
   const pianoContainerRef = useRef<HTMLDivElement>(null)
+  const saveAnchorRef = useRef<HTMLAnchorElement>(null)
 
   const fullScreen = useJuceContext((s) => s.fullScreen)
   const setFullScreen = useJuceContext((s) => s.setFullScreen)
@@ -36,6 +37,16 @@ export function Midi() {
     setFullScreen(!fullScreen)
   }
 
+  function getDateString() {
+    return new Date().toLocaleDateString('ja-JP', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).replace(/\/|\s|:/g, '-')
+  }
+
   return (
     <>
       <main className={styles.main}
@@ -53,8 +64,14 @@ export function Midi() {
             </IconButton>
           </div>
           <div className={styles.headerRight}>
-            <IconButton title='Save'>
+            <IconButton title='Save' onClick={() => saveAnchorRef.current?.click()}>
               <FiSave />
+              <a
+                ref={saveAnchorRef}
+                style={{display: 'none'}}
+                href={`data:text/plain,${encodeURIComponent(texts.join('\n'))}`}
+                download={`${getDateString()}.txt`}
+              ></a>
             </IconButton>
             <IconButton title='Open settings' onClick={openModal}>
               <FiSettings />
@@ -67,11 +84,11 @@ export function Midi() {
             color: fontColor,
             fontSize: fontSize,
           }}
-          data-full-screen="true"
+          data-full-screen='true'
         >
           <div className={styles.words}>
             <textarea
-              value={texts[editNoteNumber]}
+              value={texts[editNoteNumber] || ''}
               maxLength={600}
               style={{
                 width: '100%',
