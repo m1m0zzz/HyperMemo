@@ -60,14 +60,14 @@ public:
     int getEditNoteNumber() const;
 
     juce::ValueTree state;
-    juce::UndoManager undoManager;
+    juce::UndoManager undoManager{ 100, 30 };
 private:
     //juce::AudioProcessorValueTreeState parameters;
 
     juce::AudioPlayHead* playHead = nullptr;
     juce::AudioPlayHead::CurrentPositionInfo currentPositionInfo;
 
-    juce::Point<int> editorSize = { 1280, 720 };
+    juce::Point<int> editorSize{ 1280, 720 };
 
     double ppqPosition = 0.0;
     double timeInSeconds = 0.0;

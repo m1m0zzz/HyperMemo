@@ -30,6 +30,12 @@
 .headerRight {
   display: flex;
   align-items: center;
+  gap: 12px;
+}
+
+.headerRightGroup {
+  display: flex;
+  align-items: center;
   gap: 4px;
 }
 

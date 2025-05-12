@@ -50,7 +50,7 @@ button {
   cursor: pointer;
   transition: background-color 0.25s;
 }
-button:hover {
+button:not(:disabled):hover {
   background-color: rgba(0, 0, 0, 0.08);
 }
 

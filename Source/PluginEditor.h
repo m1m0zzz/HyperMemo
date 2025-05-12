@@ -60,6 +60,8 @@ private:
     juce::ValueTree& state;
     juce::UndoManager& undoManager;
     int editNoteNumberMemo = -1;
+    bool canUndoMemo = false;
+    bool canRedoMemo = false;
 
     juce::WebControlParameterIndexReceiver controlParameterIndexReceiver;
 
@@ -86,6 +88,22 @@ private:
             .withInitialisationData("fontWeight", getState("fontWeight"))
             .withInitialisationData("textAlign", getState("textAlign"))
             .withInitialisationData("texts", getState("texts"))
+            .withNativeFunction("undo",
+                [safe_this = juce::Component::SafePointer(this)](auto& var, auto complete)
+                {
+                    //if (safe_this->undoManager.canUndo())
+                    safe_this->undoManager.undo();
+                    complete(safe_this->undoManager.canUndo());
+                }
+            )
+            .withNativeFunction("redo",
+                [safe_this = juce::Component::SafePointer(this)](auto& var, auto complete)
+                {
+                    //if (safe_this->undoManager.canRedo())
+                    safe_this->undoManager.redo();
+                    complete(safe_this->undoManager.canRedo());
+                }
+            )
             .withNativeFunction("loadState",
                 [safe_this = juce::Component::SafePointer(this)](auto& var, auto complete)
                 {
@@ -96,7 +114,8 @@ private:
                         //DBG(safe_this->getState(id).toString());
                         complete(safe_this->getState(id));
                     } else {
-                        jassert("hasn't state: ", id);
+                        DBG("haven't state: " << id);
+                        jassert(false);
                     }
                 }
             )
@@ -105,26 +124,29 @@ private:
                 {
                     auto id = var[0].toString();
                     DBG("changeState: " << id);
-                    if (safe_this->hasState(id)) {
+                    if (safe_this->hasState(id) && id != "texts") {
                         safe_this->setState(id, var[1]);
                         complete(true);
                     } else if (id == "texts") {
                         DBG("texts");
                         if (!var[1].isArray()) {
                             complete(false);
-                            jassert("texts is not Array");
+                            DBG("texts is not Array");
+                            jassert(false);
                             return;
                         }
                         juce::ValueTree textData = safe_this->state.getChildWithName("TextData");
                         juce::var texts = var[1];
                         for (int i = 0; i < texts.size(); i++) {
-                            auto text = texts[i];
-                            //DBG(i << ": " << text.toString());
+                            auto text = texts[i].toString();
+                            if (text != "") {
+                                DBG(i << ": " << text);
+                            }
                             auto line = textData.getChildWithProperty("index", juce::var{ i });
                             if (line.isValid()) {
                                 line.setProperty("text", texts[i], &safe_this->undoManager);
                             } else {
-                                auto line = juce::ValueTree{ "Line", { { "index", i }, { "text", text.toString() }}};
+                                auto line = juce::ValueTree{ "Line", { { "index", i }, { "text", text }}};
                                 textData.addChild(line, i, &safe_this->undoManager);
                             }
                         }

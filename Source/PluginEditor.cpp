@@ -61,6 +61,22 @@ void HyperMemoAudioProcessorEditor::timerCallback()
         webComponent.emitEventIfBrowserIsVisible("onChangeEditNoteNumber", juce::var{ editNumber });
         editNoteNumberMemo = editNumber;
     }
+
+    undoManager.beginNewTransaction();
+
+    const auto canUndo = undoManager.canUndo();
+    const auto canRedo = undoManager.canRedo();
+    if (canUndoMemo != canUndo || canRedoMemo != canRedo) {
+        //DBG("canUndo or canRedo");
+        //DBG(juce::var{ canUndo }.toString());
+        //DBG(juce::var{ canRedo }.toString());
+        webComponent.emitEventIfBrowserIsVisible(
+            "onChangeCanUndoOrRedo",
+            juce::Array<juce::var> { juce::var{ canUndo }, juce::var{ canRedo } }
+        );
+        canUndoMemo = canUndo;
+        canRedoMemo = canRedo;
+    }
 }
 
 bool HyperMemoAudioProcessorEditor::hasState(juce::String id)
@@ -72,6 +88,8 @@ bool HyperMemoAudioProcessorEditor::hasState(juce::String id)
         id == "bgColor" ||
         id == "fontColor" ||
         id == "fontSize" ||
+        id == "fontName" ||
+        id == "fontWeight" ||
         id == "textAlign" ||
         id == "editNoteNumber";
 }

@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react'
+import { BiRedo, BiUndo } from 'react-icons/bi'
 import { FiChevronLeft, FiChevronRight, FiMaximize, FiMinimize, FiSave, FiSettings } from 'react-icons/fi'
 import { BlackKey, KeyLabel, Piano, WhiteKey } from '@tremolo-ui/react'
 import { clamp, noteName } from '@tremolo-ui/functions'
@@ -29,6 +30,13 @@ export function Midi() {
   const textAlign = useJuceContext((s) => s.textAlign)
   const texts = useJuceContext((s) => s.texts)
   const setTextAt = useJuceContext((s) => s.setTextAt)
+
+  const undo = useJuceContext((s) => s.undo)
+  const redo = useJuceContext((s) => s.redo)
+  const canUndo = useJuceContext((s) => s.canUndo)
+  const canRedo = useJuceContext((s) => s.canRedo)
+  // const setCanUndo = useJuceContext((s) => s.setCanUndo)
+  // const setCanRedo = useJuceContext((s) => s.setCanRedo)
 
   const setModalIsOpen = useJuceContext(s => s.setModalIsOpen)
 
@@ -65,18 +73,42 @@ export function Midi() {
             </IconButton>
           </div>
           <div className={styles.headerRight}>
-            <IconButton title='Save' onClick={() => saveAnchorRef.current?.click()}>
-              <FiSave />
-              <a
-                ref={saveAnchorRef}
-                style={{display: 'none'}}
-                href={`data:text/plain,${encodeURIComponent(texts.join('\n'))}`}
-                download={`${getDateString()}.txt`}
-              ></a>
-            </IconButton>
-            <IconButton title='Open settings' onClick={openModal}>
-              <FiSettings />
-            </IconButton>
+            <div className={styles.headerRightGroup}>
+              <IconButton
+                title='Undo'
+                disabled={!canUndo}
+                onClick={() => {
+                  console.log('onclick undo')
+                  undo()
+                }}
+              >
+                <BiUndo />
+              </IconButton>
+              <IconButton
+                title='Redo'
+                disabled={!canRedo}
+                onClick={() => {
+                  console.log('onclick redo')
+                  redo()
+                }}
+              >
+                <BiRedo />
+              </IconButton>
+            </div>
+            <div className={styles.headerRightGroup}>
+              <IconButton title='Save' onClick={() => saveAnchorRef.current?.click()}>
+                <FiSave />
+                <a
+                  ref={saveAnchorRef}
+                  style={{display: 'none'}}
+                  href={`data:text/plain,${encodeURIComponent(texts.join('\n'))}`}
+                  download={`${getDateString()}.txt`}
+                ></a>
+              </IconButton>
+              <IconButton title='Open settings' onClick={openModal}>
+                <FiSettings />
+              </IconButton>
+            </div>
           </div>
         </nav>
         <div

@@ -9,7 +9,6 @@ export type Mode = 'init' | 'sync' | 'midi'
 type State = {
   mode: Mode
   fullScreen: boolean
-  modalIsOpen: boolean
   editNoteNumber: number
   fontColor: string
   bgColor: string
@@ -18,12 +17,17 @@ type State = {
   fontWeight: string
   textAlign: TextAlign
   texts: string[]
+  modalIsOpen: boolean // only frontend
+  canUndo: boolean // only frontend
+  canRedo: boolean // only frontend
 }
 
 type Action = {
+  undo: () => void
+  redo: () => void
+
   setMode: (v: Mode) => void
   setFullScreen: (v: boolean) => void
-  setModalIsOpen: (v: boolean) => void
   setEditNoteNumber: (v: number) => void
   setBgColor: (v: string) => void
   setFontColor: (v: string) => void
@@ -33,18 +37,37 @@ type Action = {
   setTextAlign: (v: TextAlign) => void
   setTexts: (texts: string[]) => void
   setTextAt: (text: string, index: number) => void
+  setModalIsOpen: (v: boolean) => void // only frontend
+  // setCanUndo: (v: boolean) => void // only frontend
+  // setCanRedo: (v: boolean) => void // only frontend
 }
 
 type JuceStore = Awaited<ReturnType<typeof createJuceStore>>
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type JuceFunction = (...args: any[]) => number | Promise<any>
+const createJuceStore = (initProps: Partial<State>) => {
+  const loadState = getNativeFunction('loadState')
+  const changeState = getNativeFunction('changeState')
+  const undo = getNativeFunction('undo')
+  const redo = getNativeFunction('redo')
 
-const createJuceStore = (initProps: Partial<State>, changeState: JuceFunction) => {
+  const load = async () => {
+    return {
+      mode: await loadState('mode'),
+      fullScreen: Boolean(await loadState('fullScreen')),
+      editNoteNumber: await loadState('editNoteNumber'),
+      bgColor: await loadState('bgColor'),
+      fontColor: await loadState('fontColor'),
+      fontSize: Number(await loadState('fontSize')),
+      fontName: await loadState('fontName'),
+      fontWeight: await loadState('fontWeight'),
+      textAlign: await loadState('textAlign'),
+      texts: await loadState('texts'),
+    }
+  }
+
   const DEFAULT_STATES: State = {
     mode: 'midi',
     fullScreen: false,
-    modalIsOpen: false,
     editNoteNumber: noteNumber('C0'),
     bgColor: '#FFFFFF',
     fontColor: '#000000',
@@ -53,11 +76,28 @@ const createJuceStore = (initProps: Partial<State>, changeState: JuceFunction) =
     fontWeight: '400',
     textAlign: 'center',
     texts: [],
+    modalIsOpen: false, // only frontend
+    canUndo: false, // only frontend
+    canRedo: false, // only frontend
   }
 
   return createStore<State & Action>()((set) => ({
     ...DEFAULT_STATES,
     ...initProps,
+    undo: () => {
+      undo().then(() => {
+        load().then((states) => {
+          set(() => states)
+        })
+      })
+    },
+    redo: () => {
+      redo().then(() => {
+        load().then((states) => {
+          set(() => states)
+        })
+      })
+    },
     setMode: (value) =>
       set(() => {
         changeState('mode', value)
@@ -68,7 +108,6 @@ const createJuceStore = (initProps: Partial<State>, changeState: JuceFunction) =
         changeState('fullScreen', value)
         return { fullScreen: value }
       }),
-    setModalIsOpen: (value) => set(() => ({ modalIsOpen: value })), // Note: I won't save to the juce backend!
     setEditNoteNumber: (value) =>
       set(() => {
         changeState('editNoteNumber', value)
@@ -116,6 +155,7 @@ const createJuceStore = (initProps: Partial<State>, changeState: JuceFunction) =
         changeState('texts', newItem)
         return { texts: newItem }
       }),
+    setModalIsOpen: (value) => set(() => ({ modalIsOpen: value })),
   }))
 }
 
@@ -132,9 +172,6 @@ function cleanObject<T extends object>(obj: T): Partial<T> {
 export function JuceProvider({ children, ...props }: JuceProviderProps) {
   const storeRef = useRef<JuceStore>(null)
   const [savedStates, setSavedStates] = useState<Partial<State>>({})
-
-  const loadState = getNativeFunction('loadState')
-  const changeState = getNativeFunction('changeState')
 
   const loadInitialData = useCallback(() => {
     const data = window.__JUCE__.initialisationData
@@ -154,47 +191,36 @@ export function JuceProvider({ children, ...props }: JuceProviderProps) {
 
   if (!storeRef.current) {
     const initials = loadInitialData()
-    storeRef.current = createJuceStore({...savedStates, ...initials, ...props}, changeState)
+    storeRef.current = createJuceStore({...savedStates, ...initials, ...props})
   }
 
   useEffect(() => {
     if (storeRef.current) {
-      storeRef.current.setState({...savedStates,...props})
+      console.log('update savedStates')
+      storeRef.current.setState({...savedStates, ...props})
     } else {
       const initials = loadInitialData()
-      storeRef.current = createJuceStore({...savedStates, ...initials, ...props}, changeState)
+      storeRef.current = createJuceStore({...savedStates, ...initials, ...props})
     }
-  }, [changeState, loadInitialData, props, savedStates])
-
-  useEffect(() => {
-    const load = async () => {
-      setSavedStates({
-        mode: await loadState('mode'),
-        fullScreen: Boolean(await loadState('fullScreen')),
-        editNoteNumber: await loadState('editNoteNumber'),
-        bgColor: await loadState('bgColor'),
-        fontColor: await loadState('fontColor'),
-        fontSize: Number(await loadState('fontSize')),
-        fontName: await loadState('fontName'),
-        fontWeight: await loadState('fontWeight'),
-        textAlign: await loadState('textAlign'),
-        texts: await loadState('texts'),
-      })
-    }
-    load()
-  }, [])
+  }, [loadInitialData, props, savedStates])
 
   useEffect(() => {
     // NOTE: Process to change editNumber by midi input.
-    const id = window.__JUCE__.backend.addEventListener(
+    const onChangeEditNoteNumberId = window.__JUCE__.backend.addEventListener(
       'onChangeEditNoteNumber',
-      (num) => {
-        setSavedStates({...savedStates, editNoteNumber: num})
+      (num) => setSavedStates({...savedStates, editNoteNumber: num})
+    )
+    const onChangeCanUndoOrRedoId = window.__JUCE__.backend.addEventListener(
+      'onChangeCanUndoOrRedo',
+      ([canUndo, canRedo]) => {
+        console.log('ev undo', canUndo, canRedo)
+        setSavedStates({...savedStates, canUndo, canRedo})
       }
     )
 
     return () => {
-      window.__JUCE__.backend.removeEventListener(id)
+      window.__JUCE__.backend.removeEventListener(onChangeEditNoteNumberId)
+      window.__JUCE__.backend.removeEventListener(onChangeCanUndoOrRedoId)
     }
   }, [])
 
