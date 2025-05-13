@@ -22,64 +22,54 @@ HyperMemoAudioProcessor::HyperMemoAudioProcessor()
       )
 #endif
   ,
-  //parameters(*this, &undoManager, juce::Identifier("parameters"), {}),
-  state(
-    "States",
-    {
-      // app state
-      { "mode", "midi" },
-      { "fullScreen", false },
-      { "editNoteNumber", 0 },
-      // config
-      { "fontColor", "#000000" },
-      { "bgColor", "#ffffff" },
-      { "fontSize", 32 },
-      { "fontName", "system-ui"},
-      { "fontWeight", "400"},
-      { "textAlign", "center" },
-    },
-    {
-      { "TextData", {},
+    //parameters(*this, &undoManager, juce::Identifier("parameters"), {}),
+    controlledState(
+        "ControlledState",
         {
-          { "Line", {
-            { "index", 0 },
-            { "text", "sample text" }
-          }},
-          { "Line", {
-            { "index", 1 },
-            { "text", "sample text 2" }
-          }},
+            { "fontColor", "#000000" },
+            { "bgColor", "#ffffff" },
+            { "fontSize", 32 },
+            { "fontName", "system-ui"},
+            { "fontWeight", "400"},
+            { "textAlign", "center" },
+        },
+        {
+            { "TextData", {},
+                {
+                { "Line", {
+                    { "index", 0 },
+                    { "text", "sample text" }
+                }},
+                { "Line", {
+                    { "index", 1 },
+                    { "text", "sample text 2" }
+                }},
+                }
+            }
         }
-      }
-    }
-  )
+    ),
+    state(
+        "State",
+        {
+            { "mode", "midi" },
+            { "fullScreen", false },
+            { "editNoteNumber", 0 },
+        },
+        {}
+    )
 {
-    //juce::StringArray texts;
-    //for (size_t i = 0; i < MAX_MIDI_NOTE_NUMS; i++) {
-    //  texts.add("");
+    DBG("========================");
+    DBG("Load plugin!");
+    //const auto textData = controlledState.getChildWithName("TextData");
+    //DBG(textData.getNumChildren());
+    //DBG(textData.toXmlString());
+    //for (auto it = textData.begin(); it != textData.end(); ++it) {
+    //    auto line = *it;
+    //    int index = line.getProperty("index");
+    //    juce::String text = line.getProperty("text");
+    //    DBG("[" << index << "]");
+    //    DBG(text);
     //}
-    //state.setProperty("texts", juce::var{ texts }, nullptr);
-    DBG("===");
-    DBG(state.getProperty("mode").toString());
-    DBG(state.getProperty("fullScreen").toString());
-    DBG(state.getProperty("editNoteNumber").toString());
-    DBG(state.getProperty("fontColor").toString());
-    DBG(state.getProperty("bgColor").toString());
-    DBG(state.getProperty("fontSize").toString());
-    DBG(state.getProperty("textAlign").toString());
-    //DBG(state.getProperty("texts").toString());
-    //DBG(state.getProperty("texts")[0].toString());
-    //DBG(state.getProperty("texts")[1].toString());
-    const auto textData = state.getChildWithName("TextData");
-    DBG(textData.getNumChildren());
-    DBG(textData.toXmlString());
-    for (auto it = textData.begin(); it != textData.end(); ++it) {
-        auto line = *it;
-        int index = line.getProperty("index");
-        juce::String text = line.getProperty("text");
-        DBG("[" << index << "]");
-        DBG(text);
-    }
 }
 
 HyperMemoAudioProcessor::~HyperMemoAudioProcessor()
@@ -229,28 +219,52 @@ void HyperMemoAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
-    auto editor = state.getOrCreateChildWithName("editor", nullptr);
+    // NOTE: when plugin close
+    DBG("getStateInformation");
+    DBG(controlledState.toXmlString());
+    DBG(state.toXmlString());
+    for (const auto& prop : juce::StringArray{
+            "mode",
+            "fullScreen",
+            "editNoteNumber",
+        }) {
+        controlledState.setProperty(prop, state.getProperty(prop), nullptr);
+    }
+
+    auto editor = controlledState.getOrCreateChildWithName("editor", nullptr);
     editor.setProperty("sizeX", editorSize.x, nullptr);
     editor.setProperty("sizeY", editorSize.y, nullptr);
+    //DBG(controlledState.toXmlString());
 
     juce::MemoryOutputStream stream(destData, false);
-    state.writeToStream(stream);
+    controlledState.writeToStream(stream);
 }
 
 void HyperMemoAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+    // NOTE: when plugin open
+    DBG("setStateInformation");
     juce::ValueTree tree = juce::ValueTree::readFromData(data, sizeInBytes);
     if (tree.isValid()) {
-        state = tree;
-        auto editor = state.getChildWithName("editor");
-        if (editor.isValid()) {
-            editorSize.setX(editor.getProperty("sizeX", 1280));
-            editorSize.setY(editor.getProperty("sizeY", 720));
-            if (auto* activeEditor = getActiveEditor()) {
-                activeEditor->setSize(editorSize.x, editorSize.y);
-            }
+        DBG(tree.toXmlString());
+        for (const auto& prop : juce::StringArray{
+            "mode",
+            "fullScreen",
+            "editNoteNumber",
+            }) {
+            state.setProperty(prop, tree.getProperty(prop), nullptr);
+            tree.removeProperty(prop, nullptr);
+        }
+        // TODO: overwrite controlledState
+        controlledState.copyPropertiesFrom(tree, nullptr);
+
+        auto editor = tree.getChildWithName("editor");
+        editorSize.setX(editor.getProperty("sizeX", 1280));
+        editorSize.setY(editor.getProperty("sizeY", 720));
+        if (auto* activeEditor = getActiveEditor()) {
+            activeEditor->setSize(editorSize.x, editorSize.y);
         }
     } else {
         editorSize.setX(1280);
@@ -265,6 +279,7 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
     return new HyperMemoAudioProcessor();
 }
 
+//==============================================================================
 juce::Point<int> HyperMemoAudioProcessor::getSavedSize() const
 {
     return editorSize;
@@ -278,4 +293,83 @@ void HyperMemoAudioProcessor::setSavedSize(const juce::Point<int>& size)
 int HyperMemoAudioProcessor::getEditNoteNumber() const
 {
     return editNoteNumber;
+}
+
+bool HyperMemoAudioProcessor::hasState(juce::String id)
+{
+    return
+        id == "mode" ||
+        id == "fullScreen" ||
+        id == "editNoteNumber" ||
+        id == "bgColor" ||
+        id == "fontColor" ||
+        id == "fontSize" ||
+        id == "fontName" ||
+        id == "fontWeight" ||
+        id == "textAlign" ||
+        id == "texts";
+}
+
+juce::var HyperMemoAudioProcessor::getState(juce::String id)
+{
+    if (
+        id == "mode" ||
+        id == "fullScreen" ||
+        id == "editNoteNumber"
+       ) {
+        return state.getProperty(id);
+    } else if (id == "texts") {
+        juce::ValueTree textData = controlledState.getChildWithName("TextData");
+        juce::StringArray texts;
+        for (size_t i = 0; i < MAX_MIDI_NOTE_NUMS; i++) {
+            texts.add("");
+        }
+        for (auto it = textData.begin(); it != textData.end(); ++it) {
+            auto line = *it;
+            int index = line.getProperty("index");
+            juce::String text = line.getProperty("text");
+            DBG(index << ": " << text);
+            texts.set(index, text);
+        }
+        return juce::var{ texts };
+    }
+    else {
+        return controlledState.getProperty(id);
+    }
+}
+
+void HyperMemoAudioProcessor::setState(juce::String id, const juce::var& newValue)
+{
+    if (
+        id == "mode" ||
+        id == "fullScreen" ||
+        id == "editNoteNumber"
+       ) {
+        state.setProperty(id, newValue, nullptr);
+    } else if (id == "texts") {
+        if (!newValue.isArray()) {
+            DBG("texts is not Array");
+            jassert(false);
+            return;
+        }
+        juce::ValueTree textData = controlledState.getChildWithName("TextData");
+        juce::var texts = newValue;
+        for (int i = 0; i < texts.size(); i++) {
+            auto text = texts[i].toString();
+            if (text != "") {
+                DBG(i << ": " << text);
+            }
+            auto line = textData.getChildWithProperty("index", juce::var{ i });
+            if (line.isValid()) {
+                line.setProperty("text", texts[i], &undoManager);
+            }
+            else {
+                auto line = juce::ValueTree{ "Line", { { "index", i }, { "text", text }} };
+                textData.addChild(line, i, &undoManager);
+            }
+        }
+    }
+    else {
+        controlledState.setProperty(id, newValue, &undoManager);
+    }
 }

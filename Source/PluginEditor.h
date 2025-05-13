@@ -37,10 +37,17 @@ struct SinglePageBrowser : public juce::WebBrowserComponent {
     }
 };
 
+
+enum TimerIds
+{
+    DisplayRefresh,
+    ControlRefresh
+};
+
 //==============================================================================
 /**
 */
-class HyperMemoAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::Timer
+class HyperMemoAudioProcessorEditor  : public juce::AudioProcessorEditor, private juce::MultiTimer
 {
 public:
     HyperMemoAudioProcessorEditor (HyperMemoAudioProcessor&);
@@ -50,12 +57,8 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
 
-    void timerCallback() override;
+    void timerCallback(int timerID) override;
 private:
-    bool hasState(juce::String id);
-    juce::var getState(juce::String id);
-    void setState(juce::String id, const juce::var& newValue);
-
     HyperMemoAudioProcessor& audioProcessor;
     juce::ValueTree& state;
     juce::UndoManager& undoManager;
@@ -78,30 +81,28 @@ private:
             )
             //.withOptionsFrom(gainRelay)
             .withOptionsFrom(controlParameterIndexReceiver)
-            .withInitialisationData("mode", getState("mode"))
-            .withInitialisationData("fullScreen", getState("fullScreen"))
-            .withInitialisationData("editNoteNumber", getState("editNoteNumber"))
-            .withInitialisationData("fontColor", getState("fontColor"))
-            .withInitialisationData("bgColor", getState("bgColor"))
-            .withInitialisationData("fontSize", getState("fontSize"))
-            .withInitialisationData("fontName", getState("fontName"))
-            .withInitialisationData("fontWeight", getState("fontWeight"))
-            .withInitialisationData("textAlign", getState("textAlign"))
-            .withInitialisationData("texts", getState("texts"))
+            .withInitialisationData("mode", audioProcessor.getState("mode"))
+            .withInitialisationData("fullScreen", audioProcessor.getState("fullScreen"))
+            .withInitialisationData("editNoteNumber", audioProcessor.getState("editNoteNumber"))
+            .withInitialisationData("fontColor", audioProcessor.getState("fontColor"))
+            .withInitialisationData("bgColor", audioProcessor.getState("bgColor"))
+            .withInitialisationData("fontSize", audioProcessor.getState("fontSize"))
+            .withInitialisationData("fontName", audioProcessor.getState("fontName"))
+            .withInitialisationData("fontWeight", audioProcessor.getState("fontWeight"))
+            .withInitialisationData("textAlign", audioProcessor.getState("textAlign"))
+            .withInitialisationData("texts", audioProcessor.getState("texts"))
             .withNativeFunction("undo",
                 [safe_this = juce::Component::SafePointer(this)](auto& var, auto complete)
                 {
-                    //if (safe_this->undoManager.canUndo())
                     safe_this->undoManager.undo();
-                    complete(safe_this->undoManager.canUndo());
+                    complete(true);
                 }
             )
             .withNativeFunction("redo",
                 [safe_this = juce::Component::SafePointer(this)](auto& var, auto complete)
                 {
-                    //if (safe_this->undoManager.canRedo())
                     safe_this->undoManager.redo();
-                    complete(safe_this->undoManager.canRedo());
+                    complete(true);
                 }
             )
             .withNativeFunction("loadState",
@@ -109,13 +110,13 @@ private:
                 {
                     auto id = var[0].toString();
                     DBG("loadState: " << id);
-                    if (safe_this->hasState(id))
+                    if (safe_this->audioProcessor.hasState(id))
                     {
                         //DBG(safe_this->getState(id).toString());
-                        complete(safe_this->getState(id));
+                        complete(safe_this->audioProcessor.getState(id));
                     } else {
                         DBG("haven't state: " << id);
-                        jassert(false);
+                        jassertfalse;
                     }
                 }
             )
@@ -124,36 +125,12 @@ private:
                 {
                     auto id = var[0].toString();
                     DBG("changeState: " << id);
-                    if (safe_this->hasState(id) && id != "texts") {
-                        safe_this->setState(id, var[1]);
-                        complete(true);
-                    } else if (id == "texts") {
-                        DBG("texts");
-                        if (!var[1].isArray()) {
-                            complete(false);
-                            DBG("texts is not Array");
-                            jassert(false);
-                            return;
-                        }
-                        juce::ValueTree textData = safe_this->state.getChildWithName("TextData");
-                        juce::var texts = var[1];
-                        for (int i = 0; i < texts.size(); i++) {
-                            auto text = texts[i].toString();
-                            if (text != "") {
-                                DBG(i << ": " << text);
-                            }
-                            auto line = textData.getChildWithProperty("index", juce::var{ i });
-                            if (line.isValid()) {
-                                line.setProperty("text", texts[i], &safe_this->undoManager);
-                            } else {
-                                auto line = juce::ValueTree{ "Line", { { "index", i }, { "text", text }}};
-                                textData.addChild(line, i, &safe_this->undoManager);
-                            }
-                        }
+                    if (safe_this->audioProcessor.hasState(id)) {
+                        safe_this->audioProcessor.setState(id, var[1]);
                         complete(true);
                     } else {
-                        complete(false);
-                        jassert("hasn't state: ", id);
+                        DBG("hasn't state: ", id);
+                        jassertfalse;
                     }
                 }
             )

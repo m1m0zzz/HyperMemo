@@ -55,11 +55,18 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    //==============================================================================
     juce::Point<int> getSavedSize() const;
     void setSavedSize(const juce::Point<int>& size);
     int getEditNoteNumber() const;
 
+    bool hasState(juce::String id);
+    juce::var getState(juce::String id);
+    void setState(juce::String id, const juce::var& newValue);
+
+    //==============================================================================
     juce::ValueTree state;
+    juce::ValueTree controlledState; // undoManager Ç…ÇÊÇ¡Çƒêßå‰Ç∑ÇÈ state
     juce::UndoManager undoManager{ 100, 30 };
 private:
     //juce::AudioProcessorValueTreeState parameters;

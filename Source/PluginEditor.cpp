@@ -20,18 +20,15 @@
 HyperMemoAudioProcessorEditor::HyperMemoAudioProcessorEditor (HyperMemoAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p), state(p.state), undoManager(p.undoManager)
 {
-    // Make sure that before the constructor has finished, you've set the
-    // editor's size to whatever you need it to be.
     auto size = p.getSavedSize();
-    DBG(size.x);
-    DBG(size.y);
     setSize(size.x, size.y);
-    setResizeLimits(500, 500, 3840, 2160);
+    setResizeLimits(550, 500, 3840, 2160);
     setResizable(true, true);
 
     addAndMakeVisible(webComponent);
 
-    startTimerHz(30);
+    startTimer(TimerIds::DisplayRefresh, 1000 / 30);
+    startTimer(TimerIds::ControlRefresh, 1000);
 
 #if WEB_VIEW_FROM_DEV_SERVER
     webComponent.goToURL(localDevServerAddress);
@@ -54,71 +51,32 @@ void HyperMemoAudioProcessorEditor::resized() {
     audioProcessor.setSavedSize({ getWidth(), getHeight() });
 }
 
-void HyperMemoAudioProcessorEditor::timerCallback()
+void HyperMemoAudioProcessorEditor::timerCallback(int timerID)
 {
-    const auto editNumber = audioProcessor.getEditNoteNumber();
-    if (editNoteNumberMemo != editNumber) {
-        webComponent.emitEventIfBrowserIsVisible("onChangeEditNoteNumber", juce::var{ editNumber });
-        editNoteNumberMemo = editNumber;
-    }
-
-    undoManager.beginNewTransaction();
-
-    const auto canUndo = undoManager.canUndo();
-    const auto canRedo = undoManager.canRedo();
-    if (canUndoMemo != canUndo || canRedoMemo != canRedo) {
-        //DBG("canUndo or canRedo");
-        //DBG(juce::var{ canUndo }.toString());
-        //DBG(juce::var{ canRedo }.toString());
-        webComponent.emitEventIfBrowserIsVisible(
-            "onChangeCanUndoOrRedo",
-            juce::Array<juce::var> { juce::var{ canUndo }, juce::var{ canRedo } }
-        );
-        canUndoMemo = canUndo;
-        canRedoMemo = canRedo;
-    }
-}
-
-bool HyperMemoAudioProcessorEditor::hasState(juce::String id)
-{
-    return
-        id == "texts" ||
-        id == "mode" ||
-        id == "fullScreen" ||
-        id == "bgColor" ||
-        id == "fontColor" ||
-        id == "fontSize" ||
-        id == "fontName" ||
-        id == "fontWeight" ||
-        id == "textAlign" ||
-        id == "editNoteNumber";
-}
-
-juce::var HyperMemoAudioProcessorEditor::getState(juce::String id)
-{
-    if (id == "texts") {
-        juce::ValueTree textData = state.getChildWithName("TextData");
-        juce::StringArray texts;
-        for (size_t i = 0; i < MAX_MIDI_NOTE_NUMS; i++) {
-            texts.add("");
+    if (timerID == TimerIds::DisplayRefresh) {
+        const auto editNumber = audioProcessor.getEditNoteNumber();
+        if (editNoteNumberMemo != editNumber) {
+            webComponent.emitEventIfBrowserIsVisible("onChangeEditNoteNumber", juce::var{ editNumber });
+            editNoteNumberMemo = editNumber;
         }
-        for (auto it = textData.begin(); it != textData.end(); ++it) {
-            auto line = *it;
-            int index = line.getProperty("index");
-            juce::String text = line.getProperty("text");
-            DBG(index << ": " << text);
-            texts.set(index, text);
-        }
-        return juce::var{ texts };
     }
-    else {
-        return state.getProperty(id);
-    }
-}
+    else if (timerID == TimerIds::ControlRefresh) {
+        undoManager.beginNewTransaction();
 
-void HyperMemoAudioProcessorEditor::setState(juce::String id, const juce::var& newValue)
-{
-  state.setProperty(id, newValue, &undoManager);
+        const auto canUndo = undoManager.canUndo();
+        const auto canRedo = undoManager.canRedo();
+        if (canUndoMemo != canUndo || canRedoMemo != canRedo) {
+            //DBG("canUndo or canRedo");
+            //DBG(juce::var{ canUndo }.toString());
+            //DBG(juce::var{ canRedo }.toString());
+            webComponent.emitEventIfBrowserIsVisible(
+                "onChangeCanUndoOrRedo",
+                juce::Array<juce::var> { juce::var{ canUndo }, juce::var{ canRedo } }
+            );
+            canUndoMemo = canUndo;
+            canRedoMemo = canRedo;
+        }
+    }
 }
 
 static auto streamToVector(juce::InputStream& stream)
