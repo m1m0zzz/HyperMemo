@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react'
 import { BiRedo, BiUndo } from 'react-icons/bi'
 import { FiChevronLeft, FiChevronRight, FiMaximize, FiMinimize, FiSave, FiSettings } from 'react-icons/fi'
-import { BlackKey, KeyLabel, Piano, WhiteKey } from '@tremolo-ui/react'
+import { BlackKey, KeyLabel, Piano, useEventListener, WhiteKey } from '@tremolo-ui/react'
 import { clamp, noteName } from '@tremolo-ui/functions'
 
 import { IconButton } from '../../components/IconButton'
@@ -35,8 +35,6 @@ export function Midi() {
   const redo = useJuceContext((s) => s.redo)
   const canUndo = useJuceContext((s) => s.canUndo)
   const canRedo = useJuceContext((s) => s.canRedo)
-  // const setCanUndo = useJuceContext((s) => s.setCanUndo)
-  // const setCanRedo = useJuceContext((s) => s.setCanRedo)
 
   const setModalIsOpen = useJuceContext(s => s.setModalIsOpen)
 
@@ -45,6 +43,15 @@ export function Midi() {
   const toggleFullScreen = () => {
     setFullScreen(!fullScreen)
   }
+
+  useEventListener(globalThis.window, 'keydown', (event) => {
+    if (!event.ctrlKey) return
+    if (event.key == 'z') {
+      undo()
+    } else if (event.key == 'y') {
+      redo()
+    }
+  })
 
   function getDateString() {
     return new Date().toLocaleDateString('ja-JP', {
