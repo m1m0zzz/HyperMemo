@@ -59,9 +59,6 @@ void HyperMemoAudioProcessorEditor::timerCallback(int timerID)
             webComponent.emitEventIfBrowserIsVisible("onChangeEditNoteNumber", juce::var{ editNumber });
             editNoteNumberMemo = editNumber;
         }
-    }
-    else if (timerID == TimerIds::ControlRefresh) {
-        undoManager.beginNewTransaction();
 
         const auto canUndo = undoManager.canUndo();
         const auto canRedo = undoManager.canRedo();
@@ -76,6 +73,9 @@ void HyperMemoAudioProcessorEditor::timerCallback(int timerID)
             canUndoMemo = canUndo;
             canRedoMemo = canRedo;
         }
+    }
+    else if (timerID == TimerIds::ControlRefresh) {
+        undoManager.beginNewTransaction();
     }
 }
 

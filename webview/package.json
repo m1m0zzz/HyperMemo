@@ -11,7 +11,7 @@
     "zip": "npm-build-zip --source=dist --destination=../Assets --name=webview --name_only=true"
   },
   "dependencies": {
-    "@tremolo-ui/react": "^0.0.12",
+    "@tremolo-ui/react": "^0.1.0-alpha.0",
     "juce-framework-frontend-mirror": "^8.0.8-rc.1",
     "react": "^19.0.0",
     "react-color": "^2.19.3",

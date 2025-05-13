@@ -1,8 +1,8 @@
 import { useCallback, useRef } from 'react'
 import { BiRedo, BiUndo } from 'react-icons/bi'
 import { FiChevronLeft, FiChevronRight, FiMaximize, FiMinimize, FiSave, FiSettings } from 'react-icons/fi'
-import { BlackKey, KeyLabel, Piano, useEventListener, WhiteKey } from '@tremolo-ui/react'
-import { clamp, noteName } from '@tremolo-ui/functions'
+import { BlackKey, getNoteRangeArray, KeyLabel, Piano, useEventListener, WhiteKey } from '@tremolo-ui/react'
+import { clamp, isWhiteKey, noteName } from '@tremolo-ui/functions'
 
 import { IconButton } from '../../components/IconButton'
 import { useJuceContext } from '../../providers/juce'
@@ -154,20 +154,38 @@ export function Midi() {
             noteRange={{first: MIN_NOTE_NUMBER, last: MAX_NOTE_NUMBER}}
             className={styles.piano}
             height={120}
-            onPlayNote={setEditNoteNumber}
+            onPlayNote={(note) => {
+              // TODO: is not working
+              setEditNoteNumber(note)
+            }}
           >
-            <WhiteKey>
-              <KeyLabel
-                label={(noteNumber) => {
-                  const name = noteName(noteNumber)
-                  return name.startsWith('C') ? name : null
-                }}
-                style={{
-                  border: 'none'
-                }}
-              />
-            </WhiteKey>
-            <BlackKey />
+            {getNoteRangeArray({first: MIN_NOTE_NUMBER, last: MAX_NOTE_NUMBER}).map((note) =>
+              isWhiteKey(note) ? (
+                <WhiteKey
+                  key={note}
+                  noteNumber={note}
+                  className={styles.whiteKey}
+                  data-has-text={(texts[note]?.length ?? 0) > 0}
+                  onPointerDown={() => setEditNoteNumber(note)}
+                >
+                  <KeyLabel
+                    label={(note) => {
+                      const name = noteName(note)
+                      return name.startsWith('C') ? name : null
+                    }}
+                    style={{ border: 'none' }}
+                  />
+                </WhiteKey>
+              ) : (
+                <BlackKey
+                  key={note}
+                  noteNumber={note}
+                  className={styles.blackKey}
+                  data-has-text={(texts[note]?.length ?? 0) > 0}
+                  onPointerDown={() => setEditNoteNumber(note)}
+                />
+              )
+            )}
           </Piano>
         </div>
       </main>

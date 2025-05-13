@@ -3,7 +3,7 @@ import { Sync } from "./pages/Sync"
 import { Midi } from "./pages/Midi"
 
 import { JuceProvider, useJuceContext } from "./providers/juce"
-
+import { useMemo } from "react"
 
 function App() {
   return (
@@ -16,13 +16,19 @@ function App() {
 function SimpleRouter () {
   const mode = useJuceContext(s => s.mode)
 
-  return (
-    <>
-      {mode == 'init' && <Init />}
-      {mode == 'sync' && <Sync />}
-      {mode == 'midi' && <Midi />}
-    </>
-  )
+  const result = useMemo(() => {
+    if (mode == 'init') {
+      return <Init />
+    } else if (mode == 'sync') {
+      return <Sync />
+    } else if (mode == 'midi') {
+      return <Midi />
+    } else {
+      return <div>Router Error!</div>
+    }
+  }, [mode])
+
+  return result
 }
 
 export default App

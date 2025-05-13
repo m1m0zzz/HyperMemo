@@ -176,18 +176,19 @@ export function JuceProvider({ children, ...props }: JuceProviderProps) {
   const loadInitialData = useCallback(() => {
     const data = window.__JUCE__.initialisationData
     return cleanObject<Partial<State>>({
-      mode: data.mode[0],
-      fullScreen: data.fullScreen[0],
-      editNoteNumber: data.editNoteNumber[0],
-      bgColor: data.bgColor[0],
-      fontColor: data.fontColor[0],
-      fontSize: data.fontSize[0],
-      fontName: data.fontName[0],
-      fontWeight: data.fontWeight[0],
-      textAlign: data.textAlign[0],
-      texts: data.texts[0],
+      mode: data.mode?.[0],
+      fullScreen: data.fullScreen?.[0],
+      editNoteNumber: data.editNoteNumber?.[0],
+      bgColor: data.bgColor?.[0],
+      fontColor: data.fontColor?.[0],
+      fontSize: data.fontSize?.[0],
+      fontName: data.fontName?.[0],
+      fontWeight: data.fontWeight?.[0],
+      textAlign: data.textAlign?.[0],
+      texts: data.texts?.[0],
     })
   }, [])
+
 
   if (!storeRef.current) {
     const initials = loadInitialData()

@@ -100,3 +100,11 @@
   white-space: nowrap;
   font-size: 0.5rem;
 }
+
+.whiteKey[data-has-text="true"] {
+  background-color: #b1d6fa;
+}
+
+.blackKey[data-has-text="true"] {
+  background-color: #1b5185;
+}
