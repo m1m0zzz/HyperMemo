@@ -11,7 +11,7 @@ import { FontSelector } from './FontSelector'
 
 import styles from './styles.module.css'
 
-Modal.setAppElement("#root")
+Modal.setAppElement('#root')
 
 export function ConfigModal() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -122,7 +122,7 @@ export function ConfigModal() {
             <InputFileButton
               accept='.txt'
               onChange={(rawText) => {
-                const texts = rawText.split("\n")
+                const texts = rawText.split('\n').map(t => t.replaceAll('<br />', '\n'))
                 setTexts(texts)
                 setModalIsOpen(false)
                 setEditNoteNumber(0)

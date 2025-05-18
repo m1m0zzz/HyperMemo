@@ -129,7 +129,7 @@ private:
                         safe_this->audioProcessor.setState(id, var[1]);
                         complete(true);
                     } else {
-                        DBG("hasn't state: ", id);
+                        DBG("hasn't state: " << id);
                         jassertfalse;
                     }
                 }

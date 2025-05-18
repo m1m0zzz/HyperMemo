@@ -63,10 +63,9 @@ target_compile_definitions(HyperMemo
     # JUCE_DISPLAY_SPLASH_SCREEN=0 #if your plugin is distributed with GPL license or paid
 )
 
-# juce_add_binary_data(AudioPluginData SOURCES
-#     ${CMAKE_SOURCE_DIR}/assets/headphone_16_16.png
-#     ${CMAKE_SOURCE_DIR}/assets/swap_16_16.png
-# )
+juce_add_binary_data(AudioPluginData SOURCES
+    ${CMAKE_SOURCE_DIR}/Assets/webview.zip
+)
 
 target_sources(HyperMemo PRIVATE
     PluginEditor.cpp
@@ -75,7 +74,7 @@ target_sources(HyperMemo PRIVATE
 
 target_link_libraries(HyperMemo
     PRIVATE
-        # AudioPluginData           # If we'd created a binary data target, we'd link to it here
+        AudioPluginData           # If we'd created a binary data target, we'd link to it here
         juce::juce_audio_utils
         juce::juce_dsp
     PUBLIC

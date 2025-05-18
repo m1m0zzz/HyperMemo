@@ -1,12 +1,12 @@
 import { noteNumber } from '@tremolo-ui/functions'
 import { getNativeFunction } from 'juce-framework-frontend-mirror'
-import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useRef } from 'react'
 import { createStore, useStore } from 'zustand'
 
 export type TextAlign = 'left' | 'center' | 'right'
 export type Mode = 'init' | 'sync' | 'midi'
 
-type State = {
+type SharedState = {
   mode: Mode
   fullScreen: boolean
   editNoteNumber: number
@@ -17,10 +17,15 @@ type State = {
   fontWeight: string
   textAlign: TextAlign
   texts: string[]
-  modalIsOpen: boolean // only frontend
-  canUndo: boolean // only frontend
-  canRedo: boolean // only frontend
 }
+
+type FrontendState = {
+  modalIsOpen: boolean
+  canUndo: boolean
+  canRedo: boolean
+}
+
+type State = SharedState & FrontendState
 
 type Action = {
   undo: () => void
@@ -38,11 +43,9 @@ type Action = {
   setTexts: (texts: string[]) => void
   setTextAt: (text: string, index: number) => void
   setModalIsOpen: (v: boolean) => void // only frontend
-  // setCanUndo: (v: boolean) => void // only frontend
-  // setCanRedo: (v: boolean) => void // only frontend
 }
 
-type JuceStore = Awaited<ReturnType<typeof createJuceStore>>
+type JuceStore = ReturnType<typeof createJuceStore>
 
 const createJuceStore = (initProps: Partial<State>) => {
   const loadState = getNativeFunction('loadState')
@@ -50,14 +53,14 @@ const createJuceStore = (initProps: Partial<State>) => {
   const undo = getNativeFunction('undo')
   const redo = getNativeFunction('redo')
 
-  const load = async () => {
+  const reload = async () => {
     return {
       mode: await loadState('mode'),
-      fullScreen: Boolean(await loadState('fullScreen')),
+      fullScreen: await loadState('fullScreen'),
       editNoteNumber: await loadState('editNoteNumber'),
       bgColor: await loadState('bgColor'),
       fontColor: await loadState('fontColor'),
-      fontSize: Number(await loadState('fontSize')),
+      fontSize: await loadState('fontSize'),
       fontName: await loadState('fontName'),
       fontWeight: await loadState('fontWeight'),
       textAlign: await loadState('textAlign'),
@@ -76,9 +79,9 @@ const createJuceStore = (initProps: Partial<State>) => {
     fontWeight: '400',
     textAlign: 'center',
     texts: [],
-    modalIsOpen: false, // only frontend
-    canUndo: false, // only frontend
-    canRedo: false, // only frontend
+    modalIsOpen: false,
+    canUndo: false,
+    canRedo: false,
   }
 
   return createStore<State & Action>()((set) => ({
@@ -86,14 +89,14 @@ const createJuceStore = (initProps: Partial<State>) => {
     ...initProps,
     undo: () => {
       undo().then(() => {
-        load().then((states) => {
+        reload().then((states) => {
           set(() => states)
         })
       })
     },
     redo: () => {
       redo().then(() => {
-        load().then((states) => {
+        reload().then((states) => {
           set(() => states)
         })
       })
@@ -163,19 +166,19 @@ const JuceContext = createContext<JuceStore | null>(null)
 
 type JuceProviderProps = PropsWithChildren<Partial<State>>
 
+/** remove undefined in object. */
 function cleanObject<T extends object>(obj: T): Partial<T> {
   return Object.fromEntries(
-    Object.entries(obj).filter(([, v]) => v !== undefined)
+    Object.entries(obj).filter(([, v]) => v != undefined)
   ) as Partial<T>
 }
 
 export function JuceProvider({ children, ...props }: JuceProviderProps) {
   const storeRef = useRef<JuceStore>(null)
-  const [savedStates, setSavedStates] = useState<Partial<State>>({})
 
   const loadInitialData = useCallback(() => {
     const data = window.__JUCE__.initialisationData
-    return cleanObject<Partial<State>>({
+    return cleanObject<SharedState>({
       mode: data.mode?.[0],
       fullScreen: data.fullScreen?.[0],
       editNoteNumber: data.editNoteNumber?.[0],
@@ -192,30 +195,31 @@ export function JuceProvider({ children, ...props }: JuceProviderProps) {
 
   if (!storeRef.current) {
     const initials = loadInitialData()
-    storeRef.current = createJuceStore({...savedStates, ...initials, ...props})
+    storeRef.current = createJuceStore({...initials, ...props})
   }
 
   useEffect(() => {
     if (storeRef.current) {
-      console.log('update savedStates')
-      storeRef.current.setState({...savedStates, ...props})
+      // console.log('update state')
+      storeRef.current.setState({...props})
     } else {
       const initials = loadInitialData()
-      storeRef.current = createJuceStore({...savedStates, ...initials, ...props})
+      storeRef.current = createJuceStore({...initials, ...props})
     }
-  }, [loadInitialData, props, savedStates])
+  }, [loadInitialData, props])
 
   useEffect(() => {
     // NOTE: Process to change editNumber by midi input.
     const onChangeEditNoteNumberId = window.__JUCE__.backend.addEventListener(
       'onChangeEditNoteNumber',
-      (num) => setSavedStates({...savedStates, editNoteNumber: num})
+      (editNoteNumber) => {
+        storeRef.current?.setState({editNoteNumber})
+      }
     )
     const onChangeCanUndoOrRedoId = window.__JUCE__.backend.addEventListener(
       'onChangeCanUndoOrRedo',
       ([canUndo, canRedo]) => {
-        console.log('ev undo', canUndo, canRedo)
-        setSavedStates({...savedStates, canUndo, canRedo})
+        storeRef.current?.setState({canUndo, canRedo})
       }
     )
 

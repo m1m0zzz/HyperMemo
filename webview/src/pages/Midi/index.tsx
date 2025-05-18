@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 import { BiRedo, BiUndo } from 'react-icons/bi'
 import { FiChevronLeft, FiChevronRight, FiMaximize, FiMinimize, FiSave, FiSettings } from 'react-icons/fi'
 import { BlackKey, getNoteRangeArray, KeyLabel, Piano, useEventListener, WhiteKey } from '@tremolo-ui/react'
@@ -63,6 +63,10 @@ export function Midi() {
     }).replace(/\/|\s|:/g, '-')
   }
 
+  const encodedTexts = useMemo(() => `data:text/plain,${encodeURIComponent(
+    texts.map(t => t.replaceAll('\n', '<br />')).join('\n').replace(/\n*$/, '')
+  )}`, [texts])
+
   return (
     <>
       <main className={styles.main}
@@ -84,20 +88,14 @@ export function Midi() {
               <IconButton
                 title='Undo'
                 disabled={!canUndo}
-                onClick={() => {
-                  console.log('onclick undo')
-                  undo()
-                }}
+                onClick={() => undo()}
               >
                 <BiUndo />
               </IconButton>
               <IconButton
                 title='Redo'
                 disabled={!canRedo}
-                onClick={() => {
-                  console.log('onclick redo')
-                  redo()
-                }}
+                onClick={() => redo()}
               >
                 <BiRedo />
               </IconButton>
@@ -108,7 +106,7 @@ export function Midi() {
                 <a
                   ref={saveAnchorRef}
                   style={{display: 'none'}}
-                  href={`data:text/plain,${encodeURIComponent(texts.join('\n'))}`}
+                  href={encodedTexts}
                   download={`${getDateString()}.txt`}
                 ></a>
               </IconButton>
@@ -156,6 +154,7 @@ export function Midi() {
             height={120}
             onPlayNote={(note) => {
               // TODO: is not working
+              console.log('play note')
               setEditNoteNumber(note)
             }}
           >
