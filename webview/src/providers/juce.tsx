@@ -47,6 +47,9 @@ type Action = {
 
 type JuceStore = ReturnType<typeof createJuceStore>
 
+export const MIN_NOTE_NUMBER = 0
+export const MAX_NOTE_NUMBER = 127
+
 const createJuceStore = (initProps: Partial<State>) => {
   const loadState = getNativeFunction('loadState')
   const changeState = getNativeFunction('changeState')

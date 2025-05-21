@@ -4,87 +4,12 @@
   flex-direction: column;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: white;
-  height: 50px;
-  max-height: 50px;
-  padding: 0 1rem;
-  opacity: 1;
-  transition:
-    max-height 300ms ease-out,
-    opacity 300ms;
-}
-
-.header[data-full-screen="true"] {
-  max-height: 0px;
-  opacity: 0;
-}
-
-.title {
-  font-size: 1.2rem;
-}
-
-.titlePrimary {
-  font-family: "Lato", sans-serif;
-  font-weight: 700;
-  font-style: normal;
-  animation: AnimationTitle 10s ease infinite;
-  background: linear-gradient(to right, #284cdc 10%, #e694cf, #45cbfc 90%);
-  background-size: 200% auto;
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  line-height: 1;
-}
-
-@keyframes AnimationTitle {
-  0% {
-    background-position:0% 50%;
-  }
-  50% {
-    background-position:100% 50%;
-  }
-  100% {
-    background-position:0% 50%;
-  }
-}
-
-.titleSecondary {
-  font-size: 0.6em;
-  font-weight: bold;
-  margin-left: 0.5rem;
-  color: #64676c;
-}
-
-.headerRight {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.headerRightGroup {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
 .content {
   position: relative;
   flex: auto;
   padding: 0 2rem;
   display: flex;
   flex-direction: column;
-}
-
-.noteControl {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  font-size: 1.5rem;
 }
 
 .currentNote {

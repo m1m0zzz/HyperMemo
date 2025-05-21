@@ -1,23 +1,18 @@
-import { useCallback, useMemo, useRef } from 'react'
-import { BiRedo, BiUndo } from 'react-icons/bi'
-import { FiChevronLeft, FiChevronRight, FiMaximize, FiMinimize, FiSave, FiSettings } from 'react-icons/fi'
+import { useRef } from 'react'
+import { FiMaximize, FiMinimize } from 'react-icons/fi'
 import { BlackKey, getNoteRangeArray, KeyLabel, Piano, useEventListener, WhiteKey } from '@tremolo-ui/react'
-import { clamp, isWhiteKey, noteName } from '@tremolo-ui/functions'
+import { isWhiteKey, noteName } from '@tremolo-ui/functions'
 
 import { IconButton } from '../../components/IconButton'
-import { JuceLink } from '../../components/JuceLink'
-import { useJuceContext } from '../../providers/juce'
+import { MAX_NOTE_NUMBER, MIN_NOTE_NUMBER, useJuceContext } from '../../providers/juce'
 
 import { ConfigModal } from './ConfigModal'
+import { Header } from './Header'
 
 import styles from './styles.module.css'
 
-const MIN_NOTE_NUMBER = 0
-const MAX_NOTE_NUMBER = 127
-
 export function Midi() {
   const pianoContainerRef = useRef<HTMLDivElement>(null)
-  const saveAnchorRef = useRef<HTMLAnchorElement>(null)
 
   const fullScreen = useJuceContext((s) => s.fullScreen)
   const setFullScreen = useJuceContext((s) => s.setFullScreen)
@@ -34,12 +29,6 @@ export function Midi() {
 
   const undo = useJuceContext((s) => s.undo)
   const redo = useJuceContext((s) => s.redo)
-  const canUndo = useJuceContext((s) => s.canUndo)
-  const canRedo = useJuceContext((s) => s.canRedo)
-
-  const setModalIsOpen = useJuceContext(s => s.setModalIsOpen)
-
-  const openModal = useCallback(() => setModalIsOpen(true), [setModalIsOpen])
 
   const toggleFullScreen = () => {
     setFullScreen(!fullScreen)
@@ -54,74 +43,12 @@ export function Midi() {
     }
   })
 
-  function getDateString() {
-    return new Date().toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).replace(/\/|\s|:/g, '-')
-  }
-
-  const encodedTexts = useMemo(() => `data:text/plain,${encodeURIComponent(
-    texts.map(t => t.replaceAll('\n', '<br />')).join('\n').replace(/\n*$/, '')
-  )}`, [texts])
-
   return (
     <>
       <main className={styles.main}
         style={{ backgroundColor: bgColor }}
       >
-        <nav className={styles.header} data-full-screen={fullScreen}>
-          <div className={styles.title}>
-              <JuceLink href="https://m1m0zzz.github.io">
-                <span className={styles.titlePrimary}>HyperMemo</span>
-              </JuceLink>
-              <span className={styles.titleSecondary}>(MIDI mode)</span>
-            </div>
-          <div className={styles.noteControl}>
-            <IconButton onClick={() => setEditNoteNumber(clamp(editNoteNumber - 1, MIN_NOTE_NUMBER, MAX_NOTE_NUMBER))}>
-              <FiChevronLeft size={'1rem'} />
-            </IconButton>
-            <span className={styles.currentNote}>{noteName(editNoteNumber)}</span>
-            <IconButton onClick={() => setEditNoteNumber(clamp(editNoteNumber + 1, MIN_NOTE_NUMBER, MAX_NOTE_NUMBER))}>
-              <FiChevronRight size={'1rem'}/>
-            </IconButton>
-          </div>
-          <div className={styles.headerRight}>
-            <div className={styles.headerRightGroup}>
-              <IconButton
-                title='Undo'
-                disabled={!canUndo}
-                onClick={() => undo()}
-              >
-                <BiUndo />
-              </IconButton>
-              <IconButton
-                title='Redo'
-                disabled={!canRedo}
-                onClick={() => redo()}
-              >
-                <BiRedo />
-              </IconButton>
-            </div>
-            <div className={styles.headerRightGroup}>
-              <IconButton title='Save' onClick={() => saveAnchorRef.current?.click()}>
-                <FiSave />
-                <a
-                  ref={saveAnchorRef}
-                  style={{display: 'none'}}
-                  href={encodedTexts}
-                  download={`${getDateString()}.txt`}
-                ></a>
-              </IconButton>
-              <IconButton title='Open settings' onClick={openModal}>
-                <FiSettings />
-              </IconButton>
-            </div>
-          </div>
-        </nav>
+        <Header />
         <div
           className={styles.content}
           style={{
@@ -159,7 +86,7 @@ export function Midi() {
             className={styles.piano}
             height={120}
             onPlayNote={(note) => {
-              // TODO: is not working
+              // TODO: Only works with release builds.
               console.log('play note')
               setEditNoteNumber(note)
             }}
