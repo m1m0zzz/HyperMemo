@@ -5,6 +5,7 @@ import { BlackKey, getNoteRangeArray, KeyLabel, Piano, useEventListener, WhiteKe
 import { clamp, isWhiteKey, noteName } from '@tremolo-ui/functions'
 
 import { IconButton } from '../../components/IconButton'
+import { JuceLink } from '../../components/JuceLink'
 import { useJuceContext } from '../../providers/juce'
 
 import { ConfigModal } from './ConfigModal'
@@ -73,7 +74,12 @@ export function Midi() {
         style={{ backgroundColor: bgColor }}
       >
         <nav className={styles.header} data-full-screen={fullScreen}>
-          <div className={styles.title}>Trigger Memo</div>
+          <div className={styles.title}>
+              <JuceLink href="https://m1m0zzz.github.io">
+                <span className={styles.titlePrimary}>HyperMemo</span>
+              </JuceLink>
+              <span className={styles.titleSecondary}>(MIDI mode)</span>
+            </div>
           <div className={styles.noteControl}>
             <IconButton onClick={() => setEditNoteNumber(clamp(editNoteNumber - 1, MIN_NOTE_NUMBER, MAX_NOTE_NUMBER))}>
               <FiChevronLeft size={'1rem'} />

@@ -76,35 +76,38 @@ export function ConfigModal() {
               rootElement={containerRef}
             />
           </div>
-          <div>
-            <div className={styles.label}>font size</div>
-            <NumberInput
-              // variant='filled'
-              value={fontSize}
-              min={8}
-              max={200}
-              onChange={(value) => setFontSize(clamp(value, 8, 200))}
-            >
-              <Stepper>
-                <IncrementStepper />
-                <DecrementStepper />
-              </Stepper>
-            </NumberInput>
-          </div>
-          <div>
+          <div style={{gridColumn: '1 / 3'}}>
             <div className={styles.label}>font</div>
-            <FontSelector />
-          </div>
-          <div>
-            <div className={styles.label}>font weight</div>
-            <select
-              value={fontWeight}
-              onChange={(e) => setFontWeight(e.currentTarget.value)}
-            >
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) =>
-                <option key={v * 100} value={v * 100}>{v * 100}</option>
-              )}
-            </select>
+            <div className={styles.settingsFont}>
+              <NumberInput
+                // variant='filled'
+                title='font size'
+                value={fontSize}
+                min={8}
+                max={200}
+                units='px'
+                wrapperClassName={styles.fontSizeInputWrapper}
+                selectWithFocus='number'
+                onBlur={(value) => setFontSize(clamp(value, 8, 200))}
+              >
+                <Stepper>
+                  <IncrementStepper />
+                  <DecrementStepper />
+                </Stepper>
+              </NumberInput>
+              <FontSelector className={styles.fontSelector} />
+              <div className={styles.fontWeight}>
+                <select
+                  title='font weight'
+                  value={fontWeight}
+                  onChange={(e) => setFontWeight(e.currentTarget.value)}
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) =>
+                    <option key={v * 100} value={v * 100}>{v * 100}</option>
+                  )}
+                </select>
+              </div>
+            </div>
           </div>
           <div>
             <div className={styles.label}>text align</div>
@@ -118,7 +121,7 @@ export function ConfigModal() {
             </select>
           </div>
           <div style={{gridColumn: '1 / 3'}}>
-            <div className={styles.label}>import text</div>
+            <div className={styles.label}>Import text</div>
             <InputFileButton
               accept='.txt'
               onChange={(rawText) => {

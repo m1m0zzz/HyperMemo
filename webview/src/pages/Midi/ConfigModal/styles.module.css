@@ -18,3 +18,21 @@
   min-width: 400px;
   gap: 1rem 1.5rem;
 }
+
+.settingsFont {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.fontSizeInputWrapper {
+  width: 60px;
+}
+
+.fontSelector {
+  flex: 1 0;
+}
+
+.fontWeight {
+  min-width: 70px;
+}

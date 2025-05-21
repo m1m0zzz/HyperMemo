@@ -1,8 +1,10 @@
 
+import { ComponentPropsWithoutRef, useRef, useState } from "react"
 import { useAsync } from "react-use"
+import { FiEdit } from "react-icons/fi"
 
+import { IconButton } from "../../../components/IconButton"
 import { useJuceContext } from "../../../providers/juce"
-import { useEffect, useState } from "react"
 
 import styles from './FontSelector.module.css'
 
@@ -53,56 +55,77 @@ const customFonts = [
 ]
 
 
-export function FontSelector() {
-  const customId = 'Custom'
-
+export function FontSelector({...props}: ComponentPropsWithoutRef<'div'>) {
+  const customInputRef = useRef<HTMLInputElement>(null)
   const fontName = useJuceContext((s) => s.fontName)
   const setFontName = useJuceContext((s) => s.setFontName)
   const [customField, setCustomField] = useState(!customFonts.includes(fontName))
   const [error, setError] = useState(false)
 
-  useEffect(() => {
-    setCustomField(!customFonts.includes(fontName))
-  }, [fontName])
-
   return (
-    <div>
-      <select
-        defaultValue={customFonts.includes(fontName) ? fontName : customId}
-        onChange={(e) => {
-          const value = e.currentTarget.value
-          if (value != customId) {
-            setFontName(value)
-          } else {
-            setCustomField(true)
-          }
-        }}
-        style={{fontFamily: fontName}}
-      >
-        {customFonts.map((font) =>
-          font == 'system-ui' ?
-            <option key='system-ui' value='system-ui'>system-ui</option> :
-            <Option key={font} fontName={font} />)}
-        <option value={customId}>Custom</option>
-      </select>
-      {customField &&
-        <input
-          className={styles.customInput}
-          defaultValue={customFonts.includes(fontName) ? '' : fontName}
-          placeholder="Custom font name"
-          onChange={async (e) => {
-            const value = e.currentTarget.value
-            try {
-              await getFont(value)
-              setError(false)
+    <div
+      {...props}
+    >
+      <div className={styles.flex}>
+        {!customField ?
+          <select
+            title='font name'
+            defaultValue={fontName}
+            onChange={(e) => {
+              const value = e.currentTarget.value
               setFontName(value)
-            } catch {
-              setError(true)
+            }}
+            style={{ fontFamily: fontName }}
+          >
+            {customFonts.map((font) =>
+              font == 'system-ui' ?
+                <option key='system-ui' value='system-ui'>system-ui</option> :
+                <Option key={font} fontName={font} />)}
+          </select> :
+          <input
+            ref={customInputRef}
+            title='font name'
+            className={styles.customInput}
+            defaultValue={customFonts.includes(fontName) ? '' : fontName}
+            placeholder="Custom font name (from Google Fonts)"
+            onChange={async (e) => {
+              const value = e.currentTarget.value
+              try {
+                const result = await getFont(value)
+                if (result) {
+                  setError(false)
+                  setFontName(value)
+                }
+              } catch {
+                setError(true)
+              }
+            }}
+          />
+        }
+        <IconButton
+          onClick={() => {
+            if (!customField) {
+              setTimeout(() => customInputRef.current?.focus(), 100)
             }
+            setCustomField(!customField)
+            setError(false)
           }}
-        />
-      }
-      {error && <div className={styles.error}>A font that does not exist.</div>}
+          title={customField ? 'Select a font' : 'Enter a custom font'}
+          style={{
+            ...{
+              width: 32,
+              height: 32
+            },
+            ...(customField && {
+              borderRadius: 16,
+              backgroundColor: 'var(--c-active)'
+            })
+          }}
+        >
+          <FiEdit />
+        </IconButton>
+      </div>
+      {error && <div className={styles.error}>Font does not exist on Google Fonts.</div>}
     </div>
   )
 }

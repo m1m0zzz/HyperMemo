@@ -134,6 +134,15 @@ private:
                     }
                 }
             )
+            .withNativeFunction("openInBrowser",
+                [safe_this = juce::Component::SafePointer(this)](auto& var, auto complete)
+                {
+                    auto _href = var[0].toString();
+                    DBG("openInBrowser: " << _href);
+                    const auto href = juce::URL{ _href };
+                    href.launchInDefaultBrowser();
+                }
+            )
             .withResourceProvider(
                 [this](const auto& url) { return getResource(url); },
                 juce::URL{ localDevServerAddress }.getOrigin()
