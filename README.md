@@ -11,7 +11,7 @@
 
 - [ ] Mode
   - [x] MIDI trigger mode
-  - [ ] Tempo Sync
+  - [ ] tempo sync mode
 - [x] Customizations
   - [x] colors (font, bg)
   - [x] font
