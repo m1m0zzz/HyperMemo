@@ -1,13 +1,11 @@
 .inputColor {
-  --height: 38px;
-
   position: relative;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  height: var(--height);
+  height: 38px;
   gap: 6px;
   background-color: white;
   padding: 0 6px;
@@ -38,11 +36,4 @@
   outline: none;
   border: none;
   border-width: 0;
-}
-
-.cover {
-  position: absolute;
-  top: var(--height);
-  left: 0px;
-  z-index: 10;
 }

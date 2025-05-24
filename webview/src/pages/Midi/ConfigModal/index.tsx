@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react'
+import { useCallback } from 'react'
 import Modal from 'react-modal'
 import { DecrementStepper, IncrementStepper, NumberInput, Stepper } from '@tremolo-ui/react'
 import { clamp } from '@tremolo-ui/functions'
@@ -14,8 +14,6 @@ import styles from './styles.module.css'
 Modal.setAppElement('#root')
 
 export function ConfigModal() {
-  const containerRef = useRef<HTMLDivElement>(null)
-
   const modalIsOpen = useJuceContext(s => s.modalIsOpen)
   const setModalIsOpen = useJuceContext(s => s.setModalIsOpen)
   const bgColor = useJuceContext((s) => s.bgColor)
@@ -57,7 +55,7 @@ export function ConfigModal() {
         }
       }}
     >
-      <div className={styles.container} ref={containerRef}>
+      <div className={styles.container}>
         <div className={styles.heading}>Setting</div>
         <section className={styles.settings}>
           <div>
@@ -65,7 +63,6 @@ export function ConfigModal() {
             <InputColor
               value={bgColor}
               onBlur={setBgColor}
-              rootElement={containerRef}
             />
           </div>
           <div>
@@ -73,7 +70,6 @@ export function ConfigModal() {
             <InputColor
               value={fontColor}
               onBlur={setFontColor}
-              rootElement={containerRef}
             />
           </div>
           <div style={{gridColumn: '1 / 3'}}>

@@ -22,7 +22,7 @@ HyperMemoAudioProcessorEditor::HyperMemoAudioProcessorEditor (HyperMemoAudioProc
 {
     auto size = p.getSavedSize();
     setSize(size.x, size.y);
-    setResizeLimits(550, 500, 3840, 2160);
+    setResizeLimits(560, 420, 3840, 2160);
     setResizable(true, true);
 
     addAndMakeVisible(webComponent);

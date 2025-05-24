@@ -257,7 +257,6 @@ void HyperMemoAudioProcessor::setStateInformation (const void* data, int sizeInB
             state.setProperty(prop, tree.getProperty(prop), nullptr);
             tree.removeProperty(prop, nullptr);
         }
-        // TODO: overwrite controlledState
         controlledState.copyPropertiesFrom(tree, nullptr);
 
         auto editor = tree.getChildWithName("editor");

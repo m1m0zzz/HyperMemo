@@ -22,16 +22,18 @@
 }
 
 .titlePrimary {
+  display: inline-block;
   font-family: "Lato", sans-serif;
   font-weight: 700;
   font-style: normal;
-  animation: AnimationTitle 10s ease infinite;
+  animation: AnimationTitle 15s ease infinite;
   background: linear-gradient(to right, #284cdc 10%, #e694cf, #45cbfc 90%);
   background-size: 200% auto;
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  line-height: 1;
+  transform: scale(0.9, 1);
+  transform-origin: top left;
 }
 
 @keyframes AnimationTitle {
@@ -49,7 +51,6 @@
 .titleSecondary {
   font-size: 0.6em;
   font-weight: bold;
-  margin-left: 0.5rem;
   color: #64676c;
 }
 
